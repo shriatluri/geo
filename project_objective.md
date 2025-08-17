@@ -36,6 +36,24 @@ Frontend (Next.js) ↔ API Gateway (Node.js) ↔ AI Agents (Python)
 - **Redis**: Job queues, caching, session management
 
 ---
+## System Architechture
+Customer Dashboard (Next.js)
+        ↓
+API Gateway (Node.js) ← → Real-time Updates (WebSocket)
+        ↓
+Job Queue System (Redis/BullMQ)
+        ↓
+┌─────────────────┬─────────────────┐
+│   Crawling      │   AI Analysis   │
+│   Service       │   Agents        │
+│   (Node.js)     │   (Python)      │
+└─────────────────┴─────────────────┘
+        ↓                 ↓
+    Raw Data         AI Insights
+        ↓                 ↓
+        Database (PostgreSQL)
+        ↓
+Report Generation & PR Creation
 
 ## 📁 Project Structure
 
