@@ -13,6 +13,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 import { rateLimiter } from './middleware/rateLimiter';
 import { apiRoutes } from './gateway/routes';
+import './queues/workers/analysisWorker';
 
 // Load environment variables
 dotenv.config();
