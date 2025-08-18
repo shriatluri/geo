@@ -1,0 +1,32 @@
+# Core Python Dependencies
+fastapi==0.101.1
+uvicorn[standard]==0.23.2
+celery==5.3.1
+redis==4.6.0
+sqlalchemy==2.0.19
+psycopg2-binary==2.9.7
+alembic==1.11.1
+
+# AI/ML Libraries
+langchain==0.0.235
+langgraph==0.0.6
+openai==0.27.8
+anthropic==0.3.6
+google-generativeai==0.1.0
+
+# Web Scraping
+beautifulsoup4==4.12.2
+scrapy==2.10.0
+requests==2.31.0
+selenium==4.11.2
+
+# Data Processing
+pandas==2.0.3
+numpy==1.24.3
+pydantic==2.1.1
+
+# Utilities
+python-dotenv==1.0.0
+structlog==23.1.0
+tenacity==8.2.2
+httpx==0.24.1

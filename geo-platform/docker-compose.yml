@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  # Database Services
+  postgres:
+    image: postgres:15-alpine
+    container_name: geo-postgres
+    environment:
+      POSTGRES_DB: geo_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - geo-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: geo-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - geo-network
+
+  # Backend Services
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: geo-backend
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/geo_db
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - geo-network
+
+  # Python AI Agents
+  agents:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile
+    container_name: geo-agents
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/geo_db
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - ./agents:/app
+    networks:
+      - geo-network
+
+  # Celery Worker
+  celery-worker:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile
+    container_name: geo-celery-worker
+    command: celery -A src.tasks worker --loglevel=info
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/geo_db
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - ./agents:/app
+    networks:
+      - geo-network
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: geo-frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - geo-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  geo-network:
+    driver: bridge
