@@ -1,0 +1,239 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// User model for authentication and user management
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  avatar    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // User's sites
+  sites Site[]
+
+  // User's API keys and settings
+  apiKeys ApiKey[]
+
+  @@map("users")
+}
+
+// API keys for external services (OpenAI, Anthropic, etc.)
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  service   String   // 'openai', 'anthropic', 'google'
+  keyHash   String   @map("key_hash") // Encrypted API key
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, service])
+  @@map("api_keys")
+}
+
+// Websites being analyzed
+model Site {
+  id          String   @id @default(cuid())
+  domain      String   @unique
+  name        String?
+  description String?
+  userId      String   @map("user_id")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  crawls   CrawlJob[]
+  analyses Analysis[]
+
+  @@map("sites")
+}
+
+// Crawling jobs and their status
+model CrawlJob {
+  id          String     @id @default(cuid())
+  siteId      String     @map("site_id")
+  status      JobStatus  @default(PENDING)
+  depth       Int        @default(3)
+  includeApis Boolean    @default(true) @map("include_apis")
+  startedAt   DateTime?  @map("started_at")
+  completedAt DateTime?  @map("completed_at")
+  errorMsg    String?    @map("error_message")
+  progress    Int        @default(0)
+  totalPages  Int        @default(0) @map("total_pages")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  // Raw crawl data (JSONB for flexibility)
+  crawlData Json? @map("crawl_data")
+
+  // Relationships
+  site     Site       @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  analyses Analysis[]
+
+  @@map("crawl_jobs")
+}
+
+// AI analysis jobs and results
+model Analysis {
+  id               String     @id @default(cuid())
+  siteId           String     @map("site_id")
+  crawlJobId       String     @map("crawl_job_id")
+  status           JobStatus  @default(PENDING)
+  visibilityScore  Int?       @map("visibility_score") // 0-100
+  accuracyScore    Int?       @map("accuracy_score") // 0-100
+  actionabilityScore Int?     @map("actionability_score") // 0-100
+  overallScore     Int?       @map("overall_score") // 0-100
+  startedAt        DateTime?  @map("started_at")
+  completedAt      DateTime?  @map("completed_at")
+  errorMsg         String?    @map("error_message")
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  // AI analysis results (JSONB for flexibility)
+  analysisData Json? @map("analysis_data")
+
+  // Detailed findings
+  schemaIssues  SchemaIssue[]
+  contentGaps   ContentGap[]
+  apiEndpoints  ApiEndpoint[]
+
+  // Relationships
+  site         Site             @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  crawlJob     CrawlJob         @relation(fields: [crawlJobId], references: [id], onDelete: Cascade)
+  recommendations Recommendation[]
+
+  @@map("analyses")
+}
+
+// Schema.org and structured data issues
+model SchemaIssue {
+  id         String    @id @default(cuid())
+  analysisId String    @map("analysis_id")
+  type       String    // 'missing', 'invalid', 'incomplete'
+  severity   Severity  @default(MEDIUM)
+  schemaType String    @map("schema_type") // 'Organization', 'Product', etc.
+  pageUrl    String    @map("page_url")
+  issue      String    // Description of the issue
+  suggestion String?   // How to fix it
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  analysis Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@map("schema_issues")
+}
+
+// Content gaps for AI visibility
+model ContentGap {
+  id         String    @id @default(cuid())
+  analysisId String    @map("analysis_id")
+  type       String    // 'missing_faq', 'unclear_description', 'missing_context'
+  severity   Severity  @default(MEDIUM)
+  pageUrl    String    @map("page_url")
+  gap        String    // Description of the gap
+  suggestion String?   // Content to add
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  analysis Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@map("content_gaps")
+}
+
+// API endpoints discovered during crawling
+model ApiEndpoint {
+  id            String    @id @default(cuid())
+  analysisId    String    @map("analysis_id")
+  url           String
+  method        String    @default("GET")
+  isPublic      Boolean   @default(false) @map("is_public")
+  hasAuth       Boolean   @default(false) @map("has_auth")
+  responseType  String?   @map("response_type") // 'json', 'xml', etc.
+  documentation String?   // Link to docs
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  analysis Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@map("api_endpoints")
+}
+
+// AI-generated recommendations
+model Recommendation {
+  id          String           @id @default(cuid())
+  analysisId  String           @map("analysis_id")
+  type        RecommendationType
+  priority    Priority         @default(MEDIUM)
+  title       String
+  description String
+  fixType     String           @map("fix_type") // 'add_schema', 'update_content', 'expose_api'
+  
+  // Implementation details (JSONB for flexibility)
+  implementation Json?
+  
+  // Expected impact
+  estimatedImpact Json?         @map("estimated_impact")
+  
+  // Status tracking
+  status      RecommendationStatus @default(PENDING)
+  appliedAt   DateTime?        @map("applied_at")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  analysis Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@map("recommendations")
+}
+
+// Enums
+enum JobStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum RecommendationType {
+  SCHEMA
+  CONTENT
+  API
+  STRUCTURE
+  PERFORMANCE
+  ACCESSIBILITY
+}
+
+enum RecommendationStatus {
+  PENDING
+  IN_PROGRESS
+  APPLIED
+  REJECTED
+  FAILED
+}
