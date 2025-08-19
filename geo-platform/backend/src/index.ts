@@ -5,12 +5,15 @@ import compression from 'compression';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
+import Redis from 'ioredis';
+import { Request, Response } from 'express';
 
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 import { rateLimiter } from './middleware/rateLimiter';
 import { apiRoutes } from './gateway/routes';
+import './queues/workers/analysisWorker';
 
 // Load environment variables
 dotenv.config();
@@ -68,6 +71,42 @@ app.get('/health', (req, res) => {
     version: process.env.npm_package_version || '1.0.0'
   });
 });
+
+// Redis Connection
+const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+
+async function performAIAnalysis(domain: string) {
+  // Placeholder for the actual AI analysis logic
+  return { domain, analysis: 'AI analysis result' };
+}
+
+async function getAIAnalysis(domain: string) {
+  const cacheKey = `ai-analysis:${domain}`;
+  const cachedResult = await redis.get(cacheKey);
+  if (cachedResult) {
+    logger.info('Cache hit');
+    return JSON.parse(cachedResult);
+  }
+
+  logger.info('Cache miss');
+  const analysisResult = await performAIAnalysis(domain);
+  await redis.set(cacheKey, JSON.stringify(analysisResult), 'EX', 3600);
+
+  return analysisResult;
+}
+
+async function handleRequest(req: Request, res: Response) {
+  const domain = req.query.domain as string;
+  try {
+    const analysisResult = await getAIAnalysis(domain);
+    res.json(analysisResult);
+  } catch (error) {
+    logger.error('Error fetching analysis', error);
+    res.status(500).send('Error fetching analysis');
+  }
+}
+
+app.get('/api/analyze', handleRequest);
 
 // API routes
 app.use('/api', apiRoutes);
