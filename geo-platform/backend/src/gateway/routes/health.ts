@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { logger } from '../../utils/logger';
+import { checkDatabaseConnection, getDatabaseMetrics } from '../../utils/database';
 
 const router = Router();
 
@@ -25,8 +26,8 @@ router.get('/detailed', async (req, res) => {
   };
 
   try {
-    // TODO: Add database connection check when Prisma is set up
-    // healthChecks.database = await checkDatabaseConnection() ? 'healthy' : 'unhealthy';
+    // Database connection check
+    healthChecks.database = await checkDatabaseConnection() ? 'healthy' : 'unhealthy';
     
     // TODO: Add Redis connection check when Redis is set up
     // healthChecks.redis = await checkRedisConnection() ? 'healthy' : 'unhealthy';
@@ -34,11 +35,22 @@ router.get('/detailed', async (req, res) => {
     // TODO: Add queue system check when BullMQ is set up
     // healthChecks.queues = await checkQueuesConnection() ? 'healthy' : 'unhealthy';
 
+    // Get database metrics if database is healthy
+    let metrics;
+    if (healthChecks.database === 'healthy') {
+      try {
+        metrics = await getDatabaseMetrics();
+      } catch (error) {
+        logger.warn('Could not fetch database metrics:', error);
+      }
+    }
+
     const isHealthy = Object.values(healthChecks).every(status => status === 'healthy' || status === 'unknown');
     
     res.status(isHealthy ? 200 : 503).json({
       status: isHealthy ? 'healthy' : 'degraded',
       checks: healthChecks,
+      metrics,
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       memory: process.memoryUsage(),

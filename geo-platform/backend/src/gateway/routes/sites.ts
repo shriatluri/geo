@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { asyncHandler } from '../../middleware/errorHandler';
 import { logger } from '../../utils/logger';
+import analysisQueue from '../../queues/analysisQueue';
 
 const router = Router();
 
@@ -83,14 +84,16 @@ router.post('/:siteId/analyze', asyncHandler(async (req, res) => {
   const { siteId } = req.params;
   const { depth, include_apis } = req.body;
   
-  // TODO: Implement with job queue system
+  // Add job to the analysis queue
+  const job = await analysisQueue.add('start-site-analysis', { siteId, depth, include_apis });
+
   logger.info(`Starting analysis for site: ${siteId}`);
   res.status(202).json({
-    jobId: 'temp-job-id',
+    jobId: job.id,
     status: 'queued',
     siteId,
     options: { depth, include_apis },
-    message: 'Analysis start endpoint - to be implemented with job queue',
+    message: 'Site analysis job has been queued',
     timestamp: new Date().toISOString(),
   });
 }));

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { asyncHandler } from '../../middleware/errorHandler';
 import { analysisRateLimiter } from '../../middleware/rateLimiter';
 import { logger } from '../../utils/logger';
+import analysisQueue from '../../queues/analysisQueue';
 
 const router = Router();
 
@@ -12,14 +13,16 @@ router.use(analysisRateLimiter);
 router.post('/start', asyncHandler(async (req, res) => {
   const { domain, depth = 3, include_apis = true } = req.body;
   
-  // TODO: Implement with job queue system and validation
+  // Add job to the analysis queue
+  const job = await analysisQueue.add('start-analysis', { domain, depth, include_apis });
+
   logger.info(`Starting analysis for domain: ${domain}`);
   res.status(202).json({
-    jobId: 'temp-job-id',
+    jobId: job.id,
     status: 'queued',
     domain,
     options: { depth, include_apis },
-    message: 'Analysis start endpoint - to be implemented with job queue',
+    message: 'Analysis job has been queued',
     estimatedCompletion: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minutes from now
     timestamp: new Date().toISOString(),
   });
