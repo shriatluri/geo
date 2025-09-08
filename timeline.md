@@ -10,12 +10,6 @@
 - [*] Create basic API routes structureCan
 - [ ] Set up environment configuration management
 
-### **Database Schema**
-- [ ] Design and implement core tables (sites, crawl_jobs, analyses, recommendations)
-- [ ] Create database migrations
-- [ ] Set up JSONB fields for flexible crawl data storage
-- [ ] Add indexes for performance optimization
-
 ### **Python Agent Environment**
 - [ ] Set up Python FastAPI project structure
 - [ ] Configure Celery with Redis broker
@@ -34,6 +28,12 @@
 - [ ] Create API endpoint discovery system
 - [ ] Add screenshot capture functionality
 - [ ] Implement crawl job management and status tracking
+
+### **Database Schema**
+- [ ] Design and implement core tables (sites, crawl_jobs, analyses, recommendations)
+- [ ] Create database migrations
+- [ ] Set up JSONB fields for flexible crawl data storage
+- [ ] Add indexes for performance optimization
 
 ### **Data Processing Pipeline**
 - [ ] Build HTML content parser and cleaner
