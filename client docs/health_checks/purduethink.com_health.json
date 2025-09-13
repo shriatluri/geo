@@ -1,11 +1,11 @@
 {
   "domain": "https://purduethink.com",
   "ssl_valid": true,
-  "response_time_ms": 145,
+  "response_time_ms": 146,
   "mobile_friendly": true,
   "robots_txt_exists": true,
   "sitemap_urls": [
     "https://purduethink.com/sitemap.xml"
   ],
-  "platform_detected": "Squarespace"
+  "cms_provided": "Squarespace"
 }

@@ -9,6 +9,11 @@ These are the **minimum details** we need to begin crawling. They can be provide
 https://purduethink.com
 ```
 
+### **CMS**
+```
+Squarespace
+```
+
 ### **Business Type**
 ```
 Professional Services

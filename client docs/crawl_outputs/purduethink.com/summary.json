@@ -1,0 +1,11 @@
+{
+  "domain": "https://purduethink.com",
+  "cms": "Squarespace",
+  "pages_crawled": 23,
+  "output_dir": "C:\\Users\\mohan\\geo\\client docs\\crawl_outputs\\purduethink.com",
+  "limits": {
+    "max_pages": 200,
+    "max_depth": 3
+  },
+  "notes": []
+}
