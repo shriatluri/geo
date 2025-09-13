@@ -86,7 +86,7 @@ class BusinessInfo(BaseModel):
     website: Optional[str] = None
     hours: Optional[Dict[str, str]] = None
     social_media: Dict[str, str] = Field(default_factory=dict)
-    confidence: float = Field(ge=0, le=1)
+    confidence: float = Field(default=0.0, ge=0, le=1)
 
 
 class APIEndpoint(BaseModel):
