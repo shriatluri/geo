@@ -1,0 +1,109 @@
+{
+  "client_project": {
+    "project_id": "purdue_think_2024",
+    "project_name": "PurdueTHINK Website Optimization",
+    "client_name": "PurdueTHINK Consulting",
+    "start_date": "2024-01-15"
+  },
+  
+  "website_details": {
+    "primary_domain": "https://purduethink.com",
+    "additional_domains": [],
+    "cms_platform": "squarespace",
+    "hosting_provider": "squarespace"
+  },
+  
+  "access_credentials": {
+    "cms_admin_available": true,
+    "code_injection_access": true,
+    "dns_control": false,
+    "analytics_access": true,
+    "search_console_access": false,
+    "notes": "Full Squarespace admin access for implementing changes"
+  },
+  
+  "business_context": {
+    "business_type": "consulting",
+    "industry": "education/business_consulting", 
+    "target_audience": "purdue_students_and_companies",
+    "primary_services": [
+      "strategic_consulting",
+      "market_research", 
+      "process_improvement",
+      "financial_analysis"
+    ],
+    "geographic_focus": "west_lafayette_indiana",
+    "business_model": "student_organization"
+  },
+  
+  "contact_information": {
+    "primary_email": "contact@purduethink.com",
+    "phone": null,
+    "physical_address": "Purdue University, West Lafayette, IN",
+    "social_media": {
+      "linkedin": "https://linkedin.com/company/purduethink",
+      "instagram": "https://instagram.com/purduethink"
+    }
+  },
+  
+  "optimization_goals": {
+    "primary_objectives": [
+      "increase_student_applications",
+      "attract_client_companies", 
+      "improve_search_visibility",
+      "enable_ai_discoverability"
+    ],
+    "key_metrics": [
+      "application_submissions",
+      "client_inquiries",
+      "organic_search_traffic",
+      "ai_agent_interactions"
+    ]
+  },
+  
+  "content_priorities": {
+    "most_important_pages": [
+      "homepage",
+      "apply_page",
+      "client_interest_page",
+      "about_page"
+    ],
+    "key_conversion_actions": [
+      "student_application_submission",
+      "client_project_inquiry",
+      "contact_form_submission"
+    ]
+  },
+  
+  "technical_constraints": {
+    "budget_level": "low",
+    "timeline": "2_weeks",
+    "technical_expertise": "medium",
+    "maintenance_capacity": "low",
+    "preferred_solutions": "automated_low_maintenance"
+  },
+  
+  "client_questionnaire": {
+    "q1_unique_value_proposition": "What makes PurdueTHINK different from other consulting services?",
+    "a1": "We're students providing real-world consulting experience while helping companies with strategic challenges at university rates",
+    
+    "q2_ideal_client_profile": "Describe your ideal client (both students and companies)",
+    "a2": "Students: ambitious undergrads wanting consulting experience. Companies: mid-size businesses needing strategic projects with fresh perspectives",
+    
+    "q3_current_pain_points": "What's not working well with your current website?",
+    "a3": "Hard to find contact info, application process unclear, companies don't understand our value proposition",
+    
+    "q4_success_definition": "How will you measure if this optimization was successful?",
+    "a4": "More qualified student applications, more client project inquiries, better search rankings for 'purdue consulting'",
+    
+    "q5_brand_voice": "How should PurdueTHINK sound/feel to visitors?",
+    "a5": "Professional but approachable, innovative, academically rigorous, results-driven"
+  },
+  
+  "implementation_preferences": {
+    "change_approval_process": "review_before_implementation",
+    "testing_approach": "staging_then_live",
+    "rollback_plan": "backup_before_changes",
+    "communication_frequency": "daily_updates"
+  }
+}
