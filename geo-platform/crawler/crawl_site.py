@@ -419,8 +419,161 @@ class PageRecord:
     extraction_notes: List[str]
 
 # ──────────────────────────────────────────────────────────────────────────────
+# Readiness scoring helpers
+# ──────────────────────────────────────────────────────────────────────────────
+
+def score_api_testing(api_inventory: Dict[str, list], forms_count: int) -> Dict:
+    """
+    API Testing = 'Can AI interact with this site dynamically?'
+    Heuristics:
+      + JSON/XHR endpoints discovered
+      + # of distinct endpoints
+      + presence of form POST actions
+    """
+    discovered = api_inventory.get("discovered", [])
+    endpoints = {d.get("endpoint") for d in discovered if d.get("endpoint")}
+    json_like = [d for d in discovered if str(d.get("content_type","")).lower().startswith("application/json")]
+    xhr_like = [d for d in discovered if d.get("type") in ("xhr", "script_hint")]
+
+    # crude scoring (0–100)
+    score = 0
+    score += min(len(endpoints), 20) * 3                  # up to 60 pts
+    score += min(len(json_like), 10) * 3                  # up to 30 pts
+    score += min(forms_count, 5) * 2                      # up to 10 pts
+    score = max(0, min(score, 100))
+
+    ready = score >= 40  # threshold for “AI can likely interact”
+
+    signals = {
+        "distinct_endpoints": len(endpoints),
+        "json_endpoints": len(json_like),
+        "xhr_or_script_hints": len(xhr_like),
+        "forms_detected": forms_count,
+    }
+    notes = []
+    if not endpoints:
+        notes.append("No endpoints discovered from scripts/XHR.")
+    if not json_like:
+        notes.append("No JSON content types observed during sampling.")
+    if forms_count == 0:
+        notes.append("No forms detected for structured submissions.")
+    if ready:
+        notes.append("Basic API signals present for programmatic interaction.")
+    else:
+        notes.append("Insufficient dynamic endpoints for AI interaction.")
+
+    return {
+        "ai_interaction_ready": bool(ready),
+        "score": int(score),
+        "signals": signals,
+        "notes": notes,
+    }
+
+def score_industry_comparison(pages_sample: list, perf_rows: list, sitemap_found: bool, robots_found: bool) -> Dict:
+    """
+    Industry Comparison = 'Is this site optimized for search engines and AI discovery?'
+    Heuristics:
+      + title & meta description presence
+      + og tags presence
+      + structured data blocks (ld+json)
+      + mobile viewport present
+      + sitemap & robots
+      + response time baseline
+    """
+    n = len(pages_sample) or 1
+    title_ok = sum(1 for p in pages_sample if p.get("title"))
+    desc_ok  = sum(1 for p in pages_sample if p.get("meta_description"))
+    og_ok    = sum(1 for p in pages_sample if p.get("og"))
+    ld_ok    = sum(1 for p in pages_sample if p.get("structured_data"))
+
+    mv_ok = 0
+    for (_url, _ms, _bytes, mobile_viewport) in perf_rows:
+        if str(mobile_viewport).lower() in ("true", "1"):
+            mv_ok += 1
+
+    fast_ok = 0
+    for (_url, fetch_ms, *_rest) in perf_rows:
+        try:
+            if fetch_ms != "" and int(fetch_ms) <= 2000:
+                fast_ok += 1
+        except Exception:
+            pass
+
+    score = 0
+    score += round((title_ok / n) * 15)
+    score += round((desc_ok / n) * 15)
+    score += round((og_ok / n) * 10)
+    score += round((ld_ok / n) * 25)
+    score += round((mv_ok / max(len(perf_rows), 1)) * 15)
+    score += 10 if sitemap_found else 0
+    score += 5  if robots_found  else 0
+    score += round((fast_ok / max(len(perf_rows), 1)) * 10)
+    score = max(0, min(score, 100))
+
+    ready = score >= 60
+
+    signals = {
+        "pct_title": round((title_ok / n) * 100, 1),
+        "pct_meta_description": round((desc_ok / n) * 100, 1),
+        "pct_og_tags": round((og_ok / n) * 100, 1),
+        "pct_structured_data": round((ld_ok / n) * 100, 1),
+        "pct_mobile_viewport": round((mv_ok / max(len(perf_rows), 1)) * 100, 1),
+        "pct_fast_fetch_ms": round((fast_ok / max(len(perf_rows), 1)) * 100, 1),
+        "sitemap_present": bool(sitemap_found),
+        "robots_present": bool(robots_found),
+    }
+
+    notes = []
+    if signals["pct_structured_data"] < 30:
+        notes.append("Low structured data coverage; add schema.org for key pages.")
+    if signals["pct_meta_description"] < 60:
+        notes.append("Many pages missing meta descriptions.")
+    if signals["pct_mobile_viewport"] < 80:
+        notes.append("Mobile viewport tag missing on many pages.")
+    if signals["pct_fast_fetch_ms"] < 70:
+        notes.append("Performance baseline is slower than recommended (<=2s).")
+    if ready:
+        notes.append("On par with common SEO/AI discovery expectations.")
+    else:
+        notes.append("Not yet competitive on core SEO/AI discovery signals.")
+
+    return {
+        "seo_ai_discovery_ready": bool(ready),
+        "score": int(score),
+        "signals": signals,
+        "notes": notes,
+    }
+
+# ──────────────────────────────────────────────────────────────────────────────
 # Crawl
 # ──────────────────────────────────────────────────────────────────────────────
+
+@dataclass
+class PageRecord:
+    url: str
+    status: Optional[int]
+    fetch_ms: Optional[int]
+    content_bytes: Optional[int]
+    title: Optional[str]
+    meta_description: Optional[str]
+    og: Dict
+    canonical: Optional[str]
+    headings: Dict[str, List[str]]
+    nav: List[str]
+    breadcrumbs: List[str]
+    word_count: int
+    structured_data: List[Dict]
+    faq_detected: bool
+    faq_snippets: List[Dict]
+    dates: Dict[str, Optional[str]]
+    business_info: Dict[str, Optional[str]]
+    internal_links: List[str]
+    external_links: List[str]
+    categories: List[str]
+    priority_page: bool
+    conversion_elements: Dict[str, bool]
+    cms: Optional[str]
+    extraction_notes: List[str]
 
 def crawl_site(domain: str,
                cms: Optional[str],
@@ -432,9 +585,9 @@ def crawl_site(domain: str,
 
     # robots & sitemaps
     rp, robots_sitemaps = read_robots(domain)
+    robots_found = True if robots_sitemaps or rp else False
     sitemap_urls = set(robots_sitemaps)
     if not sitemap_urls:
-        # try common
         sitemap_urls.add(urljoin(domain, "/sitemap.xml"))
 
     seed_urls = set()
@@ -475,6 +628,11 @@ def crawl_site(domain: str,
     perf_writer  = csv.writer(perf_f);  perf_writer.writerow(["url","fetch_ms","content_bytes","mobile_viewport"])
 
     api_inventory: Dict[str, List[Dict]] = {"discovered": []}
+
+    # accumulators for scoring
+    forms_detected_total = 0
+    perf_rows_for_scoring: List[Tuple[str, Optional[int], Optional[int], bool]] = []
+    pages_for_scoring: List[Dict] = []
 
     count = 0
 
@@ -553,6 +711,7 @@ def crawl_site(domain: str,
             for f in forms:
                 forms_f.write(json.dumps(f, ensure_ascii=False) + "\n")
             conversion["forms_present"] = len(forms) > 0
+            forms_detected_total += len(forms)
             # naive CTA detection (Apply buttons/links)
             if soup.find(lambda tag: tag.name in ["a", "button"] and tag.get_text(strip=True).lower().startswith("apply")):
                 conversion["has_apply_cta"] = True
@@ -596,8 +755,18 @@ def crawl_site(domain: str,
 
         # write pages
         pages_f.write(json.dumps(asdict(rec), ensure_ascii=False) + "\n")
-        # write perf
+        # write perf (and keep for scoring)
         perf_writer.writerow([url, ms or "", size or "", mobile_viewport])
+        perf_rows_for_scoring.append((url, ms or "", size or "", mobile_viewport))
+
+        # minimal signals for industry comparison scoring
+        pages_for_scoring.append({
+            "title": rec.title,
+            "meta_description": rec.meta_description,
+            "og": rec.og,
+            "structured_data": rec.structured_data,
+        })
+
         seen.add(url)
         count += 1
 
@@ -634,6 +803,15 @@ def crawl_site(domain: str,
 
     (out_dir / "api_endpoints.json").write_text(json.dumps(api_inventory, indent=2, ensure_ascii=False), encoding="utf-8")
 
+    # compute readiness sections
+    api_section = score_api_testing(api_inventory, forms_detected_total)
+    industry_section = score_industry_comparison(
+        pages_sample=pages_for_scoring,
+        perf_rows=perf_rows_for_scoring,
+        sitemap_found=bool(sitemap_urls),
+        robots_found=robots_found
+    )
+
     # summary
     summary = {
         "domain": domain,
@@ -641,6 +819,20 @@ def crawl_site(domain: str,
         "pages_crawled": count,
         "output_dir": str(out_dir),
         "limits": {"max_pages": max_pages, "max_depth": max_depth},
+        "assessments": {
+            "api_testing": {
+                "label": "Can AI interact with this site dynamically?",
+                **api_section
+            },
+            "industry_comparison": {
+                "label": "Is this site optimized for search engines and AI discovery?",
+                **industry_section
+            },
+            "missing_consequences": [
+                "Dynamic AI capabilities (API testing)",
+                "Static SEO optimization (industry comparison)"
+            ]
+        },
         "notes": []
     }
     summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
