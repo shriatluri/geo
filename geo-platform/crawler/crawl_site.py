@@ -1,0 +1,680 @@
+import re
+import json
+import time
+import csv
+import queue
+import urllib.parse as up
+import xml.etree.ElementTree as ET
+from dataclasses import dataclass, asdict
+from pathlib import Path
+from typing import List, Dict, Set, Tuple, Optional
+
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin, urlparse
+import urllib.robotparser as robotparser
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Repo layout anchors (based on your project structure)
+# GEO/
+#   client docs/
+#     context.md
+#     crawl_outputs/
+#   geo-platform/
+#     crawler/
+#       crawl_site.py  (this file)
+# ──────────────────────────────────────────────────────────────────────────────
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT  = SCRIPT_DIR.parent.parent
+CLIENT_DOCS_DIR = REPO_ROOT / "client docs"
+INTAKE_MD  = CLIENT_DOCS_DIR / "context.md"
+OUTPUT_ROOT = CLIENT_DOCS_DIR / "crawl_outputs"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Intake helpers
+# ──────────────────────────────────────────────────────────────────────────────
+
+def extract_domain_from_md(filepath: Path) -> Optional[str]:
+    text = filepath.read_text(encoding="utf-8")
+    m = re.search(r"https?://[^\s`]+", text)
+    return m.group(0) if m else None
+
+def extract_cms_from_md(filepath: Path) -> Optional[str]:
+    """
+    Extract the CMS from a fenced code block under the '### **CMS**' heading.
+    Accepts ``` or ''' fences, optional indentation and blank lines.
+    Falls back to first non-empty line before the next heading if no fence found.
+    """
+    md = filepath.read_text(encoding="utf-8")
+
+    # Find the CMS header line
+    hdr = re.search(r"^\s*###\s*\*\*CMS\*\*\s*$", md, flags=re.IGNORECASE | re.MULTILINE)
+    if not hdr:
+        return None
+
+    rest = md[hdr.end():]
+
+    # Match a fenced block immediately after the header (``` or ''')
+    m = re.search(
+        r"""(?msx)
+        ^[ \t]*(?P<fence>```|''')[ \t]*[A-Za-z0-9_-]*[ \t]*\r?\n
+        (?P<body>.*?)
+        \r?\n[ \t]*(?P=fence)[ \t]*$
+        """,
+        rest,
+    )
+    if m:
+        block = m.group("body").strip()
+        for line in block.splitlines():
+            if line.strip():
+                return line.strip()
+
+    # Fallback: first non-empty line before next heading
+    next_hdr = re.search(r"^\s*###\s*\*\*", rest, flags=re.MULTILINE)
+    segment = rest[: next_hdr.start()] if next_hdr else rest
+    for line in segment.splitlines():
+        s = line.strip().strip("`'\" ")
+        if s:
+            return s
+    return None
+
+def extract_priority_pages_from_md(filepath: Path) -> List[str]:
+    """
+    Extract lines like /apply, /projects from the fenced block under '### **Priority Pages**'.
+    Accepts ``` or ''' fences, optional indentation and blank lines.
+    """
+    md = filepath.read_text(encoding="utf-8")
+
+    # Find the Priority Pages header
+    hdr = re.search(r"^\s*###\s*\*\*Priority\s+Pages\*\*\s*$", md, flags=re.IGNORECASE | re.MULTILINE)
+    if not hdr:
+        return []
+
+    rest = md[hdr.end():]
+
+    # Match a fenced block (``` or ''')
+    m = re.search(
+        r"""(?msx)
+        ^[ \t]*(?P<fence>```|''')[ \t]*[A-Za-z0-9_-]*[ \t]*\r?\n
+        (?P<body>.*?)
+        \r?\n[ \t]*(?P=fence)[ \t]*$
+        """,
+        rest,
+    )
+    if not m:
+        return []
+
+    block = m.group("body")
+    pages: List[str] = []
+    for line in block.splitlines():
+        line = line.strip()
+        if line.startswith("/"):
+            pages.append(line)
+    return pages
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Utilities
+# ──────────────────────────────────────────────────────────────────────────────
+
+def slugify_domain(url: str) -> str:
+    s = url.replace("https://", "").replace("http://", "")
+    return "".join(ch if ch.isalnum() or ch in "-._" else "_" for ch in s)
+
+def same_host(a: str, b: str) -> bool:
+    return urlparse(a).netloc.lower() == urlparse(b).netloc.lower()
+
+def norm_url(base: str, href: str) -> Optional[str]:
+    if not href:
+        return None
+    u = urljoin(base, href)
+    pr = urlparse(u)
+    pr = pr._replace(fragment="")
+    return up.urlunparse(pr)
+
+def fetch(url: str, timeout=15):
+    try:
+        t0 = time.time()
+        resp = requests.get(
+            url,
+            timeout=timeout,
+            allow_redirects=True,
+            headers={"User-Agent": "GEO-Crawler/1.0"}
+        )
+        ms = int((time.time() - t0) * 1000)
+        return resp, None, ms
+    except Exception as e:
+        return None, str(e), None
+
+def parse_sitemaps(sitemap_urls: List[str]) -> Set[str]:
+    urls = set()
+    for sm in sitemap_urls:
+        resp, _, _ = fetch(sm)
+        if not resp or resp.status_code != 200:
+            continue
+        try:
+            root = ET.fromstring(resp.text)
+        except Exception:
+            continue
+        tag = root.tag.lower()
+        if tag.endswith("sitemapindex"):
+            for loc in root.iter():
+                if loc.tag.lower().endswith("loc") and loc.text:
+                    urls.update(parse_sitemaps([loc.text.strip()]))
+        elif tag.endswith("urlset"):
+            for loc in root.iter():
+                if loc.tag.lower().endswith("loc") and loc.text:
+                    urls.add(loc.text.strip())
+    return urls
+
+def read_robots(domain: str):
+    rp = robotparser.RobotFileParser()
+    robots_url = urljoin(domain, "/robots.txt")
+    resp, _, _ = fetch(robots_url, timeout=10)
+    sitemap_urls = []
+    if resp and resp.status_code == 200:
+        text = resp.text
+        rp.parse(text.splitlines())
+        for line in text.splitlines():
+            if line.lower().startswith("sitemap:"):
+                sitemap_urls.append(line.split(":", 1)[1].strip())
+    else:
+        rp.set_url(robots_url)
+        rp.read()  # may fail silently; allow crawling if unknown
+    return rp, sitemap_urls
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Extraction helpers (per page)
+# ──────────────────────────────────────────────────────────────────────────────
+
+EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+PHONE_RE = re.compile(r"\(?\+?1?\)?[\s.-]?\d{3}[\s.-]?\d{3}[\s.-]?\d{4}")
+DATE_RE  = re.compile(r"(?i)(?:updated|last\s*updated|published)\s*[:\-]?\s*([A-Za-z]{3,9}\s+\d{1,2},\s*\d{4}|\d{4}-\d{2}-\d{2})")
+
+def collect_meta(soup: BeautifulSoup) -> Tuple[Dict, Optional[str], Optional[str]]:
+    og = {}
+    for m in soup.select('meta[property^="og:"]'):
+        prop = (m.get("property") or "").replace("og:", "").strip()
+        if prop:
+            og[prop] = m.get("content", "")
+    desc = soup.find("meta", attrs={"name": "description"})
+    canonical = soup.find("link", rel=lambda v: v and "canonical" in v)
+    return og, (desc.get("content", "") if desc else None), (canonical.get("href") if canonical else None)
+
+def headings_map(soup: BeautifulSoup) -> Dict[str, List[str]]:
+    return {
+        "h1": [h.get_text(strip=True) for h in soup.find_all("h1")],
+        "h2": [h.get_text(strip=True) for h in soup.find_all("h2")],
+    }
+
+def nav_links(soup: BeautifulSoup, base_url: str) -> List[str]:
+    urls = []
+    for a in soup.select("nav a[href]"):
+        u = norm_url(base_url, a.get("href"))
+        if u:
+            urls.append(u)
+    return list(dict.fromkeys(urls))
+
+def breadcrumb_labels(soup: BeautifulSoup) -> List[str]:
+    crumbs = []
+    for ol in soup.select('ol.breadcrumb, nav[aria-label="breadcrumb"] ol'):
+        for a in ol.select("a, li"):
+            t = a.get_text(" ", strip=True)
+            if t:
+                crumbs.append(t)
+    return [c for c in crumbs if c]
+
+def ld_json_blocks(soup: BeautifulSoup) -> List[Dict]:
+    data = []
+    for s in soup.find_all("script", type="application/ld+json"):
+        try:
+            txt = s.get_text(strip=True)
+            if not txt:
+                continue
+            obj = json.loads(txt)
+            if isinstance(obj, list):
+                for item in obj:
+                    if isinstance(item, dict):
+                        data.append({"schema_type": item.get("@type"), "raw_json": item})
+            elif isinstance(obj, dict):
+                data.append({"schema_type": obj.get("@type"), "raw_json": obj})
+        except Exception:
+            continue
+    return data
+
+def detect_faq(soup: BeautifulSoup, text: str) -> Tuple[bool, List[Dict]]:
+    # Prefer schema.org FAQPage
+    for s in soup.find_all("script", type="application/ld+json"):
+        try:
+            obj = json.loads(s.get_text(strip=True))
+            items = obj if isinstance(obj, list) else [obj]
+            for it in items:
+                if isinstance(it, dict) and it.get("@type") == "FAQPage":
+                    qas = []
+                    for q in it.get("mainEntity", []) or []:
+                        qq = (q.get("name") or "").strip()
+                        aa = ""
+                        ans = q.get("acceptedAnswer")
+                        if isinstance(ans, dict):
+                            aa = (ans.get("text") or "").strip()
+                        qas.append({"q": qq, "a": aa})
+                    return True, qas
+        except Exception:
+            pass
+    # Fallback: crude Q/A regex proximity in visible text
+    snips = []
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    for i, ln in enumerate(lines):
+        if re.match(r"(?i)^(q|question)\s*[:\-]", ln):
+            for j in range(i + 1, min(i + 6, len(lines))):
+                if re.match(r"(?i)^(a|answer)\s*[:\-]", lines[j]):
+                    qtxt = re.sub(r"(?i)^(q|question)\s*[:\-]\s*", "", ln).strip()
+                    atxt = re.sub(r"(?i)^(a|answer)\s*[:\-]\s*", "", lines[j]).strip()
+                    if qtxt and atxt:
+                        snips.append({"q": qtxt, "a": atxt})
+                    break
+    return (len(snips) > 0), snips
+
+def extract_business_info(soup: BeautifulSoup, text: str) -> Dict[str, Optional[str]]:
+    email = None
+    m = EMAIL_RE.search(text)
+    if m:
+        email = m.group(0)
+
+    phone = None
+    p = PHONE_RE.search(text)
+    if p:
+        phone = p.group(0)
+
+    addr = None
+    adr_tag = soup.find("address")
+    if adr_tag:
+        t = adr_tag.get_text(" ", strip=True)
+        if t:
+            addr = t
+
+    if not addr:
+        footer = soup.find("footer")
+        if footer:
+            ft = footer.get_text(" ", strip=True)
+            if "IN" in ft or "Indiana" in ft or re.search(r"\d{5}", ft):
+                addr = ft
+
+    return {"email": email, "phone": phone, "address": addr}
+
+def extract_dates(soup: BeautifulSoup, text: str) -> Dict[str, Optional[str]]:
+    pub = None
+    upd = None
+    for t in soup.find_all("time"):
+        dt = t.get("datetime") or t.get_text(strip=True)
+        if dt and not pub:
+            pub = dt
+        elif dt and not upd:
+            upd = dt
+    for m in DATE_RE.finditer(text):
+        val = m.group(1)
+        if not upd:
+            upd = val
+        else:
+            pub = pub or val
+    return {"published": pub, "updated": upd}
+
+def word_count(text: str) -> int:
+    return len(re.findall(r"\b\w+\b", text))
+
+def find_links(soup: BeautifulSoup, base_url: str) -> Tuple[List[str], List[str], List[Tuple[str, str]]]:
+    internal, external, rel_edges = [], [], []
+    base_host = urlparse(base_url).netloc.lower()
+    for a in soup.find_all("a", href=True):
+        u = norm_url(base_url, a["href"])
+        if not u:
+            continue
+        host = urlparse(u).netloc.lower()
+        if host == base_host or host == "":
+            internal.append(u)
+            rel_edges.append((base_url, u))
+        else:
+            external.append(u)
+            rel_edges.append((base_url, u))
+    return list(dict.fromkeys(internal)), list(dict.fromkeys(external)), rel_edges
+
+def extract_forms(soup: BeautifulSoup, base_url: str) -> List[Dict]:
+    forms = []
+    for frm in soup.find_all("form"):
+        action = norm_url(base_url, frm.get("action") or base_url)
+        method = (frm.get("method") or "GET").upper()
+        inputs = []
+        for inp in frm.find_all(["input", "select", "textarea"]):
+            inputs.append({
+                "name": inp.get("name"),
+                "type": inp.name if inp.name != "input" else (inp.get("type") or "text"),
+                "required": inp.has_attr("required")
+            })
+        validation_attrs = []
+        for attr in ["required", "pattern", "minlength", "maxlength", "step", "min", "max"]:
+            if any(i.get("required") if attr == "required" else inp.has_attr(attr)
+                   for inp in frm.find_all(["input", "select", "textarea"])):
+                validation_attrs.append(attr)
+        honeypot = any(inp for inp in frm.find_all("input")
+                       if inp.get("type") == "text" and "honeypot" in (inp.get("name", "") + inp.get("id", "")).lower())
+        captcha = any("captcha" in (c.get("class") or []) for c in frm.find_all(True))
+        forms.append({
+            "page_url": base_url,
+            "action": action,
+            "method": method,
+            "inputs": inputs,
+            "validation_attrs": validation_attrs,
+            "honeypot_present": honeypot,
+            "captcha_present": captcha
+        })
+    return forms
+
+def script_hints_and_endpoints(soup: BeautifulSoup, base_url: str) -> List[Dict]:
+    hints = []
+    # External scripts
+    for s in soup.find_all("script", src=True):
+        src = norm_url(base_url, s["src"])
+        if src:
+            hints.append({"source_url": base_url, "type": "script_hint", "endpoint": src, "method": "GET"})
+    # Inline fetch/XHR hints (very simple)
+    for s in soup.find_all("script"):
+        txt = (s.get_text() or "")
+        for m in re.finditer(r"""fetch\((['"])(https?://[^'"]+)\1""", txt):
+            hints.append({"source_url": base_url, "type": "xhr", "endpoint": m.group(2), "method": "GET"})
+        for m in re.finditer(r"""['"](/api/[^'"]+)['"]""", txt):
+            ep = norm_url(base_url, m.group(1))
+            if ep:
+                hints.append({"source_url": base_url, "type": "xhr", "endpoint": ep, "method": "GET"})
+    return hints
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Data class
+# ──────────────────────────────────────────────────────────────────────────────
+
+@dataclass
+class PageRecord:
+    url: str
+    status: Optional[int]
+    fetch_ms: Optional[int]
+    content_bytes: Optional[int]
+    title: Optional[str]
+    meta_description: Optional[str]
+    og: Dict
+    canonical: Optional[str]
+    headings: Dict[str, List[str]]
+    nav: List[str]
+    breadcrumbs: List[str]
+    word_count: int
+    structured_data: List[Dict]
+    faq_detected: bool
+    faq_snippets: List[Dict]
+    dates: Dict[str, Optional[str]]
+    business_info: Dict[str, Optional[str]]
+    internal_links: List[str]
+    external_links: List[str]
+    categories: List[str]
+    priority_page: bool
+    conversion_elements: Dict[str, bool]
+    cms: Optional[str]
+    extraction_notes: List[str]
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Crawl
+# ──────────────────────────────────────────────────────────────────────────────
+
+def crawl_site(domain: str,
+               cms: Optional[str],
+               priority_paths: List[str],
+               max_pages: int = 200,
+               max_depth: int = 3) -> Dict[str, Path]:
+    out_dir = OUTPUT_ROOT / slugify_domain(domain)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # robots & sitemaps
+    rp, robots_sitemaps = read_robots(domain)
+    sitemap_urls = set(robots_sitemaps)
+    if not sitemap_urls:
+        # try common
+        sitemap_urls.add(urljoin(domain, "/sitemap.xml"))
+
+    seed_urls = set()
+    if sitemap_urls:
+        seed_urls |= parse_sitemaps(list(sitemap_urls))
+
+    # priority URLs
+    for p in priority_paths:
+        seed_urls.add(urljoin(domain, p))
+
+    # ensure homepage is included
+    seed_urls.add(domain.rstrip("/") + "/")
+
+    # BFS crawl with robots & same-host constraint
+    q = queue.Queue()
+    seen: Set[str] = set()
+    depth_map: Dict[str, int] = {}
+
+    # prime queue
+    for u in seed_urls:
+        if same_host(u, domain):
+            q.put(u)
+            depth_map[u] = 0
+
+    pages_path = out_dir / "pages.jsonl"
+    edges_path = out_dir / "edges.csv"
+    forms_path = out_dir / "forms.jsonl"
+    perf_path  = out_dir / "performance.csv"
+    api_path   = out_dir / "api_endpoints.json"
+    summary_path = out_dir / "summary.json"
+
+    # writers
+    pages_f = open(pages_path, "w", encoding="utf-8")
+    forms_f = open(forms_path, "w", encoding="utf-8")
+    edges_f = open(edges_path, "w", newline="", encoding="utf-8")
+    perf_f  = open(perf_path, "w", newline="", encoding="utf-8")
+    edges_writer = csv.writer(edges_f); edges_writer.writerow(["from_url","to_url","rel"])
+    perf_writer  = csv.writer(perf_f);  perf_writer.writerow(["url","fetch_ms","content_bytes","mobile_viewport"])
+
+    api_inventory: Dict[str, List[Dict]] = {"discovered": []}
+
+    count = 0
+
+    while not q.empty() and count < max_pages:
+        url = q.get()
+        if url in seen:
+            continue
+        depth = depth_map.get(url, 0)
+        if depth > max_depth:
+            continue
+
+        # robots
+        try:
+            if not rp.can_fetch("*", url):
+                continue
+        except Exception:
+            pass
+
+        resp, err, ms = fetch(url, timeout=15)
+        status = resp.status_code if resp else None
+        html = resp.text if (resp and resp.text) else ""
+        size = len(html.encode("utf-8")) if html else 0
+
+        mobile_viewport = False
+        title = meta_desc = canonical = None
+        og = {}
+        headings = {"h1": [], "h2": []}
+        nav = []
+        breadcrumbs = []
+        sdata = []
+        faq_detected = False
+        faq_snippets = []
+        dates = {"published": None, "updated": None}
+        biz = {"email": None, "phone": None, "address": None}
+        internal_links: List[str] = []
+        external_links: List[str] = []
+        categories: List[str] = []
+        conversion = {"has_apply_cta": False, "forms_present": False}
+        extraction_notes: List[str] = []
+        wc = 0
+
+        if resp and resp.ok and ("text/html" in (resp.headers.get("Content-Type", "")) or html):
+            soup = BeautifulSoup(html, "html.parser")
+            # title
+            if soup.title and soup.title.string:
+                title = soup.title.string.strip()
+            # meta/og/canonical
+            og, meta_desc, canonical = collect_meta(soup)
+            # viewport
+            mobile_viewport = soup.find("meta", attrs={"name": "viewport"}) is not None
+            # headings
+            headings = headings_map(soup)
+            # nav & breadcrumbs
+            nav = nav_links(soup, url)
+            breadcrumbs = breadcrumb_labels(soup)
+            # ld+json
+            sdata = ld_json_blocks(soup)
+            # faq
+            faq_detected, faq_snippets = detect_faq(soup, soup.get_text(" ", strip=True))
+            # dates
+            page_text = soup.get_text(" ", strip=True)
+            dates = extract_dates(soup, page_text)
+            # business info
+            biz = extract_business_info(soup, page_text)
+            # word count
+            wc = word_count(page_text)
+            # links
+            internal_links, external_links, rel_edges = find_links(soup, url)
+            # write edges
+            for to in internal_links:
+                edges_writer.writerow([url, to, "internal"])
+            for to in external_links:
+                edges_writer.writerow([url, to, "external"])
+            # forms
+            forms = extract_forms(soup, url)
+            for f in forms:
+                forms_f.write(json.dumps(f, ensure_ascii=False) + "\n")
+            conversion["forms_present"] = len(forms) > 0
+            # naive CTA detection (Apply buttons/links)
+            if soup.find(lambda tag: tag.name in ["a", "button"] and tag.get_text(strip=True).lower().startswith("apply")):
+                conversion["has_apply_cta"] = True
+            # api/script hints
+            hints = script_hints_and_endpoints(soup, url)
+            if hints:
+                api_inventory["discovered"].extend(hints)
+
+            # queue internal links
+            for nxt in internal_links:
+                if nxt not in seen and same_host(nxt, domain):
+                    if nxt not in depth_map:
+                        depth_map[nxt] = depth + 1
+                    q.put(nxt)
+
+            # page record
+            rec = PageRecord(
+                url=url, status=status, fetch_ms=ms, content_bytes=size,
+                title=title, meta_description=meta_desc, og=og, canonical=canonical,
+                headings=headings, nav=nav, breadcrumbs=breadcrumbs, word_count=wc,
+                structured_data=sdata, faq_detected=faq_detected, faq_snippets=faq_snippets,
+                dates=dates, business_info=biz, internal_links=internal_links,
+                external_links=external_links, categories=categories,
+                priority_page=any(url.rstrip("/").endswith(p.strip("/")) for p in priority_paths),
+                conversion_elements=conversion, cms=cms, extraction_notes=extraction_notes
+            )
+        else:
+            # non-HTML or error
+            rec = PageRecord(
+                url=url, status=status, fetch_ms=ms, content_bytes=size,
+                title=None, meta_description=None, og={}, canonical=None,
+                headings={"h1": [], "h2": []}, nav=[], breadcrumbs=[], word_count=0,
+                structured_data=[], faq_detected=False, faq_snippets=[],
+                dates={"published": None, "updated": None},
+                business_info={"email": None, "phone": None, "address": None},
+                internal_links=[], external_links=[], categories=[],
+                priority_page=any(url.rstrip("/").endswith(p.strip("/")) for p in priority_paths),
+                conversion_elements={"has_apply_cta": False, "forms_present": False},
+                cms=cms, extraction_notes=[f"non_html_or_error: {err or status}"]
+            )
+
+        # write pages
+        pages_f.write(json.dumps(asdict(rec), ensure_ascii=False) + "\n")
+        # write perf
+        perf_writer.writerow([url, ms or "", size or "", mobile_viewport])
+        seen.add(url)
+        count += 1
+
+    pages_f.close(); forms_f.close(); edges_f.close(); perf_f.close()
+
+    # de-duplicate api endpoints and optionally probe some
+    dedup = {}
+    for item in api_inventory["discovered"]:
+        key = (item.get("source_url"), item.get("type"), item.get("endpoint"))
+        if key not in dedup:
+            dedup[key] = item
+    api_inventory["discovered"] = list(dedup.values())
+
+    # lightweight sampling (HEAD/GET) for JSON detection
+    for entry in api_inventory["discovered"][:30]:  # cap sampling
+        ep = entry.get("endpoint")
+        try:
+            r = requests.head(ep, timeout=6, allow_redirects=True)
+            ct = r.headers.get("Content-Type", "")
+            entry["status_sample"] = r.status_code
+            entry["content_type"] = ct
+            if "application/json" in ct.lower():
+                r2 = requests.get(ep, timeout=6)
+                entry["status_sample"] = r2.status_code
+                entry["content_type"] = r2.headers.get("Content-Type", "")
+                try:
+                    j = r2.json()
+                    if isinstance(j, dict):
+                        entry["sample_keys"] = list(j.keys())[:10]
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+    (out_dir / "api_endpoints.json").write_text(json.dumps(api_inventory, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    # summary
+    summary = {
+        "domain": domain,
+        "cms": cms,
+        "pages_crawled": count,
+        "output_dir": str(out_dir),
+        "limits": {"max_pages": max_pages, "max_depth": max_depth},
+        "notes": []
+    }
+    summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    return {
+        "pages": pages_path,
+        "edges": edges_path,
+        "forms": forms_path,
+        "performance": perf_path,
+        "api": out_dir / "api_endpoints.json",
+        "summary": summary_path,
+    }
+
+# ──────────────────────────────────────────────────────────────────────────────
+# CLI
+# ──────────────────────────────────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    if not INTAKE_MD.exists():
+        raise FileNotFoundError(f"Intake file not found: {INTAKE_MD}")
+
+    domain = extract_domain_from_md(INTAKE_MD)
+    cms = extract_cms_from_md(INTAKE_MD) or None
+    priority = extract_priority_pages_from_md(INTAKE_MD)
+
+    if not domain:
+        raise RuntimeError("No domain found in intake Markdown.")
+
+    print(f"[crawl] Domain: {domain}")
+    print(f"[crawl] CMS: {cms}")
+    print(f"[crawl] Priority pages: {priority}")
+
+    outputs = crawl_site(domain, cms, priority, max_pages=200, max_depth=3)
+
+    print("[crawl] Done. Outputs:")
+    for k, v in outputs.items():
+        print(f"  - {k}: {v}")
