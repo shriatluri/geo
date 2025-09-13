@@ -11,6 +11,9 @@ import re
 from bs4 import BeautifulSoup
 
 from ..shared.base_agent import BaseAgent
+from .analyzer import AEOAnalyzer
+from .generator import AEOGenerator
+from .validator import AEOValidator
 from ..shared.models import (
     WebsiteData, AgentResponse, AnalysisResult, AgentType,
     PriorityLevel, ImpactLevel, EffortLevel, SchemaMarkup, SchemaType
@@ -31,7 +34,9 @@ class AEOAgent(BaseAgent):
     
     def __init__(self, llm_client: LLMClient):
         super().__init__("AEO Agent", llm_client)
-        self.schema_templates = self._load_schema_templates()
+        self.analyzer = AEOAnalyzer()
+        self.generator = AEOGenerator()
+        self.validator = AEOValidator()
         
     def get_agent_type(self) -> str:
         return AgentType.AEO
