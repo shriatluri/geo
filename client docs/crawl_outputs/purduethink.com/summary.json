@@ -7,5 +7,47 @@
     "max_pages": 200,
     "max_depth": 3
   },
+  "assessments": {
+    "api_testing": {
+      "label": "Can AI interact with this site dynamically?",
+      "ai_interaction_ready": false,
+      "score": 36,
+      "signals": {
+        "distinct_endpoints": 12,
+        "json_endpoints": 0,
+        "xhr_or_script_hints": 203,
+        "forms_detected": 0
+      },
+      "notes": [
+        "No JSON content types observed during sampling.",
+        "No forms detected for structured submissions.",
+        "Insufficient dynamic endpoints for AI interaction."
+      ]
+    },
+    "industry_comparison": {
+      "label": "Is this site optimized for search engines and AI discovery?",
+      "seo_ai_discovery_ready": true,
+      "score": 84,
+      "signals": {
+        "pct_title": 78.3,
+        "pct_meta_description": 47.8,
+        "pct_og_tags": 78.3,
+        "pct_structured_data": 78.3,
+        "pct_mobile_viewport": 78.3,
+        "pct_fast_fetch_ms": 100.0,
+        "sitemap_present": true,
+        "robots_present": true
+      },
+      "notes": [
+        "Many pages missing meta descriptions.",
+        "Mobile viewport tag missing on many pages.",
+        "On par with common SEO/AI discovery expectations."
+      ]
+    },
+    "missing_consequences": [
+      "Dynamic AI capabilities (API testing)",
+      "Static SEO optimization (industry comparison)"
+    ]
+  },
   "notes": []
 }
