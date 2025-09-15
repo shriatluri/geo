@@ -1,10 +1,30 @@
 {
   "domain": "https://purduethink.com",
-  "cms": "Squarespace",
-  "pages_crawled": 23,
+  "cms": "squarespace",
+  "client_project": {
+    "project_id": "purdue_think_2024",
+    "project_name": "PurdueTHINK Website Optimization",
+    "client_name": "PurdueTHINK Consulting",
+    "start_date": "2024-01-15"
+  },
+  "optimization_goals": {
+    "primary_objectives": [
+      "increase_student_applications",
+      "attract_client_companies",
+      "improve_search_visibility",
+      "enable_ai_discoverability"
+    ],
+    "key_metrics": [
+      "application_submissions",
+      "client_inquiries",
+      "organic_search_traffic",
+      "ai_agent_interactions"
+    ]
+  },
+  "pages_crawled": 20,
   "output_dir": "C:\\Users\\mohan\\geo\\client docs\\crawl_outputs\\purduethink.com",
   "limits": {
-    "max_pages": 200,
+    "max_pages": 120,
     "max_depth": 3
   },
   "assessments": {
@@ -27,20 +47,19 @@
     "industry_comparison": {
       "label": "Is this site optimized for search engines and AI discovery?",
       "seo_ai_discovery_ready": true,
-      "score": 84,
+      "score": 92,
       "signals": {
-        "pct_title": 78.3,
-        "pct_meta_description": 47.8,
-        "pct_og_tags": 78.3,
-        "pct_structured_data": 78.3,
-        "pct_mobile_viewport": 78.3,
+        "pct_title": 90.0,
+        "pct_meta_description": 55.0,
+        "pct_og_tags": 90.0,
+        "pct_structured_data": 90.0,
+        "pct_mobile_viewport": 90.0,
         "pct_fast_fetch_ms": 100.0,
         "sitemap_present": true,
         "robots_present": true
       },
       "notes": [
         "Many pages missing meta descriptions.",
-        "Mobile viewport tag missing on many pages.",
         "On par with common SEO/AI discovery expectations."
       ]
     },
@@ -49,5 +68,12 @@
       "Static SEO optimization (industry comparison)"
     ]
   },
-  "notes": []
+  "fast_fetch_pct": 100.0,
+  "mobile_viewport_coverage_pct": 90.0,
+  "robots_txt_exists": true,
+  "sitemaps_discovered_count": 1,
+  "notes": [
+    "103 sitemap URL(s) are off-host; possible external blog/CDN or misconfigured sitemap.",
+    "Intake provides a primary email, but pages may not expose it consistently."
+  ]
 }

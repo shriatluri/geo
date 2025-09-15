@@ -4,65 +4,98 @@ import json
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from pathlib import Path
+from typing import Optional, Dict, Any
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Paths anchored to your repo layout (see screenshot)
-#   GEO/
-#     client docs/
-#       context.md
-#       health_checks/
-#     geo-platform/
-#       crawler/
-#         pre_health.py  (this file)
+# Paths anchored to your repo layout
+# GEO/
+#   client docs/
+#     context.md   (now contains JSON)
+#     health_checks/
+#   geo-platform/
+#     crawler/
+#       pre_health.py  (this file)
 # ──────────────────────────────────────────────────────────────────────────────
 
 SCRIPT_DIR = Path(__file__).resolve().parent                  # .../GEO/geo-platform/crawler
 REPO_ROOT  = SCRIPT_DIR.parent.parent                         # .../GEO
 CLIENT_DOCS_DIR = REPO_ROOT / "client docs"                   # .../GEO/client docs
-INTAKE_MD  = CLIENT_DOCS_DIR / "context.md"                   # .../GEO/client docs/context.md
+INTAKE_PATH  = CLIENT_DOCS_DIR / "client_input_template.json"  # JSON content
 OUTPUT_DIR = CLIENT_DOCS_DIR / "health_checks"                # .../GEO/client docs/health_checks
 
+
 # ──────────────────────────────────────────────────────────────────────────────
-# Intake extractors
+# Intake loading (JSON-first, with a tolerant fallback)
 # ──────────────────────────────────────────────────────────────────────────────
 
-def extract_domain_from_md(filepath: Path) -> str | None:
-    """Extract the first domain URL from the intake .md file."""
-    text = filepath.read_text(encoding="utf-8")
-    m = re.search(r"https?://[^\s`]+", text)
-    return m.group(0) if m else None
+def load_intake_json(filepath: Path) -> Dict[str, Any]:
+    """
+    Load the intake JSON from context.md.
 
-def extract_cms_from_md(filepath: Path) -> str | None:
+    Supports:
+      1) File is pure JSON.
+      2) File contains a fenced code block ```json ... ``` with JSON.
+    Raises ValueError if JSON cannot be parsed.
     """
-    Extract the CMS from the fenced code block under the heading:
-      ### **CMS**
-      ```
-      Squarespace
-      ```
-    """
-    md = filepath.read_text(encoding="utf-8")
-    pattern = re.compile(
-        r"^###\s*\*\*CMS\*\*\s*```(?:[a-zA-Z0-9_-]*)?\s*([\s\S]*?)\s*```",
-        re.IGNORECASE | re.MULTILINE
+    raw = filepath.read_text(encoding="utf-8").strip()
+
+    # Try direct JSON first
+    try:
+        return json.loads(raw)
+    except Exception:
+        pass
+
+    # Try to locate a fenced ```json ... ``` block
+    m = re.search(
+        r"```json\s*([\s\S]*?)\s*```",
+        raw,
+        flags=re.IGNORECASE
     )
-    m = pattern.search(md)
-    if not m:
-        return None
-    block = m.group(1).strip()
-    for line in block.splitlines():
-        line = line.strip()
-        if line:
-            return line
+    if m:
+        block = m.group(1).strip()
+        try:
+            return json.loads(block)
+        except Exception as e:
+            raise ValueError(f"Failed to parse JSON from fenced block: {e}") from e
+
+    # As a last resort, try to find the first {...} block and parse it
+    m2 = re.search(r"\{[\s\S]*\}\s*$", raw)
+    if m2:
+        try:
+            return json.loads(m2.group(0))
+        except Exception as e:
+            raise ValueError(f"Failed to parse JSON from trailing object: {e}") from e
+
+    raise ValueError("No valid JSON found in intake file.")
+
+
+def extract_domain_from_ctx(ctx: Dict[str, Any]) -> Optional[str]:
+    """
+    Pull primary domain from intake JSON:
+      website_details.primary_domain
+    """
+    return (ctx.get("website_details") or {}).get("primary_domain")
+
+
+def extract_cms_from_ctx(ctx: Dict[str, Any]) -> Optional[str]:
+    """
+    Pull CMS platform from intake JSON:
+      website_details.cms_platform
+    """
+    cms = (ctx.get("website_details") or {}).get("cms_platform")
+    if isinstance(cms, str):
+        return cms.strip()
     return None
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Pre-health check
 # ──────────────────────────────────────────────────────────────────────────────
 
-def pre_health_check(domain_url: str, cms_provided: str | None = None) -> dict:
+def pre_health_check(domain_url: str, cms_provided: Optional[str] = None) -> dict:
     """
     Run a pre-health check on a given domain URL.
-    Assumes CMS is provided by the client (no detection/verification).
+    Assumes CMS is provided by the intake JSON (no detection/verification).
     """
     results = {
         "domain": domain_url,
@@ -76,12 +109,12 @@ def pre_health_check(domain_url: str, cms_provided: str | None = None) -> dict:
 
     try:
         # Reachability & latency
-        resp = requests.get(domain_url, timeout=10, allow_redirects=True)
+        resp = requests.get(domain_url, timeout=10, allow_redirects=True, headers={"User-Agent": "GEO-PreHealth/1.0"})
         results["response_time_ms"] = int(resp.elapsed.total_seconds() * 1000)
 
         # robots.txt & sitemaps from robots
         robots_url = urljoin(domain_url, "/robots.txt")
-        robots_resp = requests.get(robots_url, timeout=5)
+        robots_resp = requests.get(robots_url, timeout=5, headers={"User-Agent": "GEO-PreHealth/1.0"})
         results["robots_txt_exists"] = robots_resp.status_code == 200
 
         if results["robots_txt_exists"]:
@@ -92,7 +125,7 @@ def pre_health_check(domain_url: str, cms_provided: str | None = None) -> dict:
         # fallback to /sitemap.xml
         if not results["sitemap_urls"]:
             sitemap_url = urljoin(domain_url, "/sitemap.xml")
-            sitemap_resp = requests.get(sitemap_url, timeout=5)
+            sitemap_resp = requests.get(sitemap_url, timeout=5, headers={"User-Agent": "GEO-PreHealth/1.0"})
             if sitemap_resp.status_code == 200:
                 results["sitemap_urls"].append(sitemap_url)
 
@@ -104,6 +137,7 @@ def pre_health_check(domain_url: str, cms_provided: str | None = None) -> dict:
         results["error"] = str(e)
 
     return results
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Persistence
@@ -123,22 +157,26 @@ def save_results(results: dict, outdir: Path = OUTPUT_DIR) -> Path:
     print(f"[pre-health] Saved results to: {path}")
     return path
 
+
 # ──────────────────────────────────────────────────────────────────────────────
 # CLI
 # ──────────────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    if not INTAKE_MD.exists():
-        raise FileNotFoundError(f"Intake file not found at: {INTAKE_MD}")
+    if not INTAKE_PATH.exists():
+        raise FileNotFoundError(f"Intake file not found at: {INTAKE_PATH}")
 
-    domain = extract_domain_from_md(INTAKE_MD)
-    cms = extract_cms_from_md(INTAKE_MD)
+    # Load intake JSON (from context.md)
+    ctx = load_intake_json(INTAKE_PATH)
+
+    domain = extract_domain_from_ctx(ctx)
+    cms = extract_cms_from_ctx(ctx)
 
     if not domain:
-        raise RuntimeError("No domain found in the intake Markdown.")
+        raise RuntimeError("No primary_domain found in intake JSON (website_details.primary_domain).")
 
     print(f"Running pre-health check for: {domain}")
-    print(f"Using intake: {INTAKE_MD}")
+    print(f"Using intake (JSON): {INTAKE_PATH}")
     results = pre_health_check(domain_url=domain, cms_provided=cms)
     print(results)
     save_results(results)  # -> GEO/client docs/health_checks/<domain>_health.json

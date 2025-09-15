@@ -5,9 +5,9 @@ import csv
 import queue
 import urllib.parse as up
 import xml.etree.ElementTree as ET
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from pathlib import Path
-from typing import List, Dict, Set, Tuple, Optional
+from typing import List, Dict, Set, Tuple, Optional, Any
 
 import requests
 from bs4 import BeautifulSoup
@@ -18,7 +18,7 @@ import urllib.robotparser as robotparser
 # Repo layout anchors (based on your project structure)
 # GEO/
 #   client docs/
-#     context.md
+#     client_input_template.json  (INTAKE JSON)
 #     crawl_outputs/
 #   geo-platform/
 #     crawler/
@@ -28,90 +28,106 @@ import urllib.robotparser as robotparser
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT  = SCRIPT_DIR.parent.parent
 CLIENT_DOCS_DIR = REPO_ROOT / "client docs"
-INTAKE_MD  = CLIENT_DOCS_DIR / "context.md"
+INTAKE_PATH  = CLIENT_DOCS_DIR / "client_input_template.json"
 OUTPUT_ROOT = CLIENT_DOCS_DIR / "crawl_outputs"
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Intake helpers
+# Intake helpers (JSON-first, tolerant to fenced blocks)
 # ──────────────────────────────────────────────────────────────────────────────
 
-def extract_domain_from_md(filepath: Path) -> Optional[str]:
-    text = filepath.read_text(encoding="utf-8")
-    m = re.search(r"https?://[^\s`]+", text)
-    return m.group(0) if m else None
-
-def extract_cms_from_md(filepath: Path) -> Optional[str]:
+def load_intake_json(filepath: Path) -> Dict[str, Any]:
     """
-    Extract the CMS from a fenced code block under the '### **CMS**' heading.
-    Accepts ``` or ''' fences, optional indentation and blank lines.
-    Falls back to first non-empty line before the next heading if no fence found.
+    Load the intake JSON from file.
+
+    Supports:
+      1) File is pure JSON.
+      2) File contains a fenced code block ```json ... ``` with JSON.
+      3) Last {...} JSON object in file.
     """
-    md = filepath.read_text(encoding="utf-8")
+    raw = filepath.read_text(encoding="utf-8").strip()
 
-    # Find the CMS header line
-    hdr = re.search(r"^\s*###\s*\*\*CMS\*\*\s*$", md, flags=re.IGNORECASE | re.MULTILINE)
-    if not hdr:
-        return None
+    # Try direct JSON
+    try:
+        return json.loads(raw)
+    except Exception:
+        pass
 
-    rest = md[hdr.end():]
-
-    # Match a fenced block immediately after the header (``` or ''')
-    m = re.search(
-        r"""(?msx)
-        ^[ \t]*(?P<fence>```|''')[ \t]*[A-Za-z0-9_-]*[ \t]*\r?\n
-        (?P<body>.*?)
-        \r?\n[ \t]*(?P=fence)[ \t]*$
-        """,
-        rest,
-    )
+    # Fenced block
+    m = re.search(r"```json\s*([\s\S]*?)\s*```", raw, flags=re.IGNORECASE)
     if m:
-        block = m.group("body").strip()
-        for line in block.splitlines():
-            if line.strip():
-                return line.strip()
+        block = m.group(1).strip()
+        return json.loads(block)
 
-    # Fallback: first non-empty line before next heading
-    next_hdr = re.search(r"^\s*###\s*\*\*", rest, flags=re.MULTILINE)
-    segment = rest[: next_hdr.start()] if next_hdr else rest
-    for line in segment.splitlines():
-        s = line.strip().strip("`'\" ")
-        if s:
-            return s
-    return None
+    # Trailing object
+    m2 = re.search(r"\{[\s\S]*\}\s*$", raw)
+    if m2:
+        return json.loads(m2.group(0))
 
-def extract_priority_pages_from_md(filepath: Path) -> List[str]:
+    raise ValueError("No valid JSON found in intake file.")
+
+def extract_domain_from_ctx(ctx: Dict[str, Any]) -> Optional[str]:
+    # Prefer schema: website_details.primary_domain, fallback to 'domain'
+    return ((ctx.get("website_details") or {}).get("primary_domain")
+            or ctx.get("domain"))
+
+def extract_cms_from_ctx(ctx: Dict[str, Any]) -> Optional[str]:
+    cms = ((ctx.get("website_details") or {}).get("cms_platform")
+           or ctx.get("cms_provided"))
+    return cms.strip() if isinstance(cms, str) else None
+
+def extract_priority_paths_from_ctx(ctx: Dict[str, Any]) -> List[str]:
     """
-    Extract lines like /apply, /projects from the fenced block under '### **Priority Pages**'.
-    Accepts ``` or ''' fences, optional indentation and blank lines.
+    Convert JSON 'content_priorities.most_important_pages' into site paths.
+
+    Recognizes common keys like:
+      - homepage -> "/"
+      - apply_page -> "/apply"
+      - client_interest_page -> "/client-interest"
+      - about_page -> "/about"
+      - projects_page -> "/projects"
+      - people_page -> "/people"
+
+    If intake includes explicit paths under:
+      - content_priorities.priority_paths OR top-level priority_paths
+    prefer that list.
     """
-    md = filepath.read_text(encoding="utf-8")
-
-    # Find the Priority Pages header
-    hdr = re.search(r"^\s*###\s*\*\*Priority\s+Pages\*\*\s*$", md, flags=re.IGNORECASE | re.MULTILINE)
-    if not hdr:
-        return []
-
-    rest = md[hdr.end():]
-
-    # Match a fenced block (``` or ''')
-    m = re.search(
-        r"""(?msx)
-        ^[ \t]*(?P<fence>```|''')[ \t]*[A-Za-z0-9_-]*[ \t]*\r?\n
-        (?P<body>.*?)
-        \r?\n[ \t]*(?P=fence)[ \t]*$
-        """,
-        rest,
-    )
-    if not m:
-        return []
-
-    block = m.group("body")
-    pages: List[str] = []
-    for line in block.splitlines():
-        line = line.strip()
-        if line.startswith("/"):
-            pages.append(line)
-    return pages
+    cp = (ctx.get("content_priorities") or {})
+    explicit = ctx.get("priority_paths") or cp.get("priority_paths")
+    if isinstance(explicit, list) and all(isinstance(x, str) for x in explicit):
+        paths = explicit
+    else:
+        names = cp.get("most_important_pages") or []
+        if not isinstance(names, list):
+            names = []
+        mapping = {
+            "homepage": "/",
+            "apply_page": "/apply",
+            "client_interest_page": "/client-interest",
+            "about_page": "/about",
+            "projects_page": "/projects",
+            "people_page": "/people",
+            "donate_page": "/donate",
+            "contact_page": "/contact",
+            "recruitment_page": "/recruitment",
+            "interview_process_page": "/interview-process",
+            "services_page": "/consulting",
+        }
+        paths: List[str] = []
+        for name in names:
+            if not isinstance(name, str):
+                continue
+            key = name.strip().lower()
+            if key in mapping:
+                paths.append(mapping[key])
+            elif key.startswith("/"):
+                paths.append(key)
+    # de-dup while preserving order
+    seen = set()
+    dedup = []
+    for p in paths:
+        if p not in seen:
+            dedup.append(p); seen.add(p)
+    return dedup
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Utilities
@@ -168,11 +184,15 @@ def parse_sitemaps(sitemap_urls: List[str]) -> Set[str]:
     return urls
 
 def read_robots(domain: str):
+    """
+    Returns: (RobotFileParser, sitemap_urls: list[str], robots_ok: bool)
+    """
     rp = robotparser.RobotFileParser()
     robots_url = urljoin(domain, "/robots.txt")
     resp, _, _ = fetch(robots_url, timeout=10)
-    sitemap_urls = []
+    sitemap_urls, robots_ok = [], False
     if resp and resp.status_code == 200:
+        robots_ok = True
         text = resp.text
         rp.parse(text.splitlines())
         for line in text.splitlines():
@@ -180,8 +200,12 @@ def read_robots(domain: str):
                 sitemap_urls.append(line.split(":", 1)[1].strip())
     else:
         rp.set_url(robots_url)
-        rp.read()  # may fail silently; allow crawling if unknown
-    return rp, sitemap_urls
+        try:
+            rp.read()
+            robots_ok = True  # if we didn't error, consider it found/readable
+        except Exception:
+            robots_ok = False
+    return rp, sitemap_urls, robots_ok
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Extraction helpers (per page)
@@ -388,7 +412,7 @@ def script_hints_and_endpoints(soup: BeautifulSoup, base_url: str) -> List[Dict]
     return hints
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Data class
+# Data classes
 # ──────────────────────────────────────────────────────────────────────────────
 
 @dataclass
@@ -545,51 +569,66 @@ def score_industry_comparison(pages_sample: list, perf_rows: list, sitemap_found
     }
 
 # ──────────────────────────────────────────────────────────────────────────────
+# Priority & CTA helpers
+# ──────────────────────────────────────────────────────────────────────────────
+
+def is_priority_url(url: str, domain: str, priority_paths: List[str]) -> bool:
+    base = domain.rstrip("/").lower()
+    u = url.rstrip("/").lower()
+    for p in priority_paths:
+        p_norm = (p or "").strip().lower()
+        if p_norm in ("", "/"):
+            if u == base:
+                return True
+        else:
+            if u.endswith(p_norm.strip("/")):
+                return True
+    return False
+
+def derive_cta_keywords(ctx: Dict[str, Any]) -> List[str]:
+    objs = (ctx.get("optimization_goals") or {}).get("primary_objectives", [])
+    acts = (ctx.get("content_priorities") or {}).get("key_conversion_actions", [])
+    seeds = ["apply", "apply now", "join us", "contact", "inquire", "get in touch"]
+    joined = " ".join(objs + acts).lower()
+    if "application" in joined or "apply" in joined:
+        seeds += ["student application", "submit application"]
+    if "inquir" in joined or "client" in joined or "project" in joined:
+        seeds += ["client interest", "project inquiry", "request project", "work with us"]
+    # unique + lower
+    return sorted({s.lower() for s in seeds})
+
+def has_any_cta(soup: BeautifulSoup, keywords: List[str]) -> bool:
+    for el in soup.find_all(["a","button"]):
+        t = (el.get_text(" ", strip=True) or "").lower()
+        if any(k in t for k in keywords):
+            return True
+    return False
+
+# ──────────────────────────────────────────────────────────────────────────────
 # Crawl
 # ──────────────────────────────────────────────────────────────────────────────
 
-@dataclass
-class PageRecord:
-    url: str
-    status: Optional[int]
-    fetch_ms: Optional[int]
-    content_bytes: Optional[int]
-    title: Optional[str]
-    meta_description: Optional[str]
-    og: Dict
-    canonical: Optional[str]
-    headings: Dict[str, List[str]]
-    nav: List[str]
-    breadcrumbs: List[str]
-    word_count: int
-    structured_data: List[Dict]
-    faq_detected: bool
-    faq_snippets: List[Dict]
-    dates: Dict[str, Optional[str]]
-    business_info: Dict[str, Optional[str]]
-    internal_links: List[str]
-    external_links: List[str]
-    categories: List[str]
-    priority_page: bool
-    conversion_elements: Dict[str, bool]
-    cms: Optional[str]
-    extraction_notes: List[str]
-
-def crawl_site(domain: str,
+def crawl_site(ctx: Dict[str, Any],
+               domain: str,
                cms: Optional[str],
                priority_paths: List[str],
                max_pages: int = 200,
                max_depth: int = 3) -> Dict[str, Path]:
+
     out_dir = OUTPUT_ROOT / slugify_domain(domain)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # robots & sitemaps
-    rp, robots_sitemaps = read_robots(domain)
-    robots_found = True if robots_sitemaps or rp else False
-    sitemap_urls = set(robots_sitemaps)
+    rp, robots_sitemaps, robots_found = read_robots(domain)
+    sitemap_urls: Set[str] = set(robots_sitemaps)
+    # If intake provides sitemaps, merge them
+    provided_sitemaps = ctx.get("sitemap_urls") or []
+    if provided_sitemaps:
+        sitemap_urls |= set(provided_sitemaps)
     if not sitemap_urls:
         sitemap_urls.add(urljoin(domain, "/sitemap.xml"))
 
+    # Build seed set
     seed_urls = set()
     if sitemap_urls:
         seed_urls |= parse_sitemaps(list(sitemap_urls))
@@ -634,6 +673,8 @@ def crawl_site(domain: str,
     perf_rows_for_scoring: List[Tuple[str, Optional[int], Optional[int], bool]] = []
     pages_for_scoring: List[Dict] = []
 
+    cta_keywords = derive_cta_keywords(ctx)
+
     count = 0
 
     while not q.empty() and count < max_pages:
@@ -655,6 +696,9 @@ def crawl_site(domain: str,
         status = resp.status_code if resp else None
         html = resp.text if (resp and resp.text) else ""
         size = len(html.encode("utf-8")) if html else 0
+
+        # politeness: small sleep after requests to avoid hammering
+        time.sleep(0.15)
 
         mobile_viewport = False
         title = meta_desc = canonical = None
@@ -712,8 +756,8 @@ def crawl_site(domain: str,
                 forms_f.write(json.dumps(f, ensure_ascii=False) + "\n")
             conversion["forms_present"] = len(forms) > 0
             forms_detected_total += len(forms)
-            # naive CTA detection (Apply buttons/links)
-            if soup.find(lambda tag: tag.name in ["a", "button"] and tag.get_text(strip=True).lower().startswith("apply")):
+            # CTA detection (intake-guided)
+            if has_any_cta(soup, cta_keywords):
                 conversion["has_apply_cta"] = True
             # api/script hints
             hints = script_hints_and_endpoints(soup, url)
@@ -735,7 +779,7 @@ def crawl_site(domain: str,
                 structured_data=sdata, faq_detected=faq_detected, faq_snippets=faq_snippets,
                 dates=dates, business_info=biz, internal_links=internal_links,
                 external_links=external_links, categories=categories,
-                priority_page=any(url.rstrip("/").endswith(p.strip("/")) for p in priority_paths),
+                priority_page=is_priority_url(url, domain, priority_paths),
                 conversion_elements=conversion, cms=cms, extraction_notes=extraction_notes
             )
         else:
@@ -748,7 +792,7 @@ def crawl_site(domain: str,
                 dates={"published": None, "updated": None},
                 business_info={"email": None, "phone": None, "address": None},
                 internal_links=[], external_links=[], categories=[],
-                priority_page=any(url.rstrip("/").endswith(p.strip("/")) for p in priority_paths),
+                priority_page=is_priority_url(url, domain, priority_paths),
                 conversion_elements={"has_apply_cta": False, "forms_present": False},
                 cms=cms, extraction_notes=[f"non_html_or_error: {err or status}"]
             )
@@ -783,16 +827,20 @@ def crawl_site(domain: str,
     # lightweight sampling (HEAD/GET) for JSON detection
     for entry in api_inventory["discovered"][:30]:  # cap sampling
         ep = entry.get("endpoint")
+        if not ep:
+            continue
         try:
             r = requests.head(ep, timeout=6, allow_redirects=True)
+            if r.status_code == 405:
+                r = requests.get(ep, timeout=6, allow_redirects=True)
             ct = r.headers.get("Content-Type", "")
             entry["status_sample"] = r.status_code
             entry["content_type"] = ct
             if "application/json" in ct.lower():
-                r2 = requests.get(ep, timeout=6)
-                entry["status_sample"] = r2.status_code
-                entry["content_type"] = r2.headers.get("Content-Type", "")
                 try:
+                    r2 = requests.get(ep, timeout=6)
+                    entry["status_sample"] = r2.status_code
+                    entry["content_type"] = r2.headers.get("Content-Type", "")
                     j = r2.json()
                     if isinstance(j, dict):
                         entry["sample_keys"] = list(j.keys())[:10]
@@ -812,10 +860,33 @@ def crawl_site(domain: str,
         robots_found=robots_found
     )
 
+    # quick roll-ups
+    fast_pct = industry_section["signals"]["pct_fast_fetch_ms"]
+    viewport_pct = industry_section["signals"]["pct_mobile_viewport"]
+
+    # warning if many sitemap URLs are off-host
+    offhost_in_sitemap = 0
+    for u in list(seed_urls):
+        if not same_host(u, domain):
+            offhost_in_sitemap += 1
+
+    notes = []
+    if offhost_in_sitemap > 0:
+        notes.append(f"{offhost_in_sitemap} sitemap URL(s) are off-host; possible external blog/CDN or misconfigured sitemap.")
+
+    # If intake contact info exists but not found on pages, flag it for discoverability
+    intake_contact = (ctx.get("contact_information") or {})
+    if intake_contact.get("primary_email"):
+        if not any("@" in (p.get("business_info", {}) or {}).get("email", "") for p in []):
+            # we didn't aggregate page records here; leave as general hint
+            notes.append("Intake provides a primary email, but pages may not expose it consistently.")
+
     # summary
     summary = {
         "domain": domain,
         "cms": cms,
+        "client_project": ctx.get("client_project"),
+        "optimization_goals": ctx.get("optimization_goals"),
         "pages_crawled": count,
         "output_dir": str(out_dir),
         "limits": {"max_pages": max_pages, "max_depth": max_depth},
@@ -833,7 +904,11 @@ def crawl_site(domain: str,
                 "Static SEO optimization (industry comparison)"
             ]
         },
-        "notes": []
+        "fast_fetch_pct": fast_pct,
+        "mobile_viewport_coverage_pct": viewport_pct,
+        "robots_txt_exists": bool(robots_found),
+        "sitemaps_discovered_count": len(sitemap_urls),
+        "notes": notes
     }
     summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
 
@@ -842,7 +917,7 @@ def crawl_site(domain: str,
         "edges": edges_path,
         "forms": forms_path,
         "performance": perf_path,
-        "api": out_dir / "api_endpoints.json",
+        "api": api_path,
         "summary": summary_path,
     }
 
@@ -851,21 +926,36 @@ def crawl_site(domain: str,
 # ──────────────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    if not INTAKE_MD.exists():
-        raise FileNotFoundError(f"Intake file not found: {INTAKE_MD}")
+    if not INTAKE_PATH.exists():
+        raise FileNotFoundError(f"Intake file not found: {INTAKE_PATH}")
 
-    domain = extract_domain_from_md(INTAKE_MD)
-    cms = extract_cms_from_md(INTAKE_MD) or None
-    priority = extract_priority_pages_from_md(INTAKE_MD)
+    ctx = load_intake_json(INTAKE_PATH)
+
+    # Optionally adjust crawl limits for low budget/short timeline projects
+    tech = ctx.get("technical_constraints") or {}
+    budget = (tech.get("budget_level") or "").lower()
+    max_pages_default = 120 if budget == "low" else 200
+    max_depth_default = 3
+
+    domain = extract_domain_from_ctx(ctx)
+    cms = extract_cms_from_ctx(ctx) or None
+    priority = extract_priority_paths_from_ctx(ctx)
 
     if not domain:
-        raise RuntimeError("No domain found in intake Markdown.")
+        raise RuntimeError("No primary_domain found in intake JSON (website_details.primary_domain).")
 
     print(f"[crawl] Domain: {domain}")
     print(f"[crawl] CMS: {cms}")
     print(f"[crawl] Priority pages: {priority}")
 
-    outputs = crawl_site(domain, cms, priority, max_pages=200, max_depth=3)
+    outputs = crawl_site(
+        ctx=ctx,
+        domain=domain,
+        cms=cms,
+        priority_paths=priority,
+        max_pages=max_pages_default,
+        max_depth=max_depth_default
+    )
 
     print("[crawl] Done. Outputs:")
     for k, v in outputs.items():

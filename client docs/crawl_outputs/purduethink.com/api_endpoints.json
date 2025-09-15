@@ -1,7 +1,7 @@
 {
   "discovered": [
     {
-      "source_url": "https://purduethink.com/our-people",
+      "source_url": "https://purduethink.com/interview-process",
       "type": "script_hint",
       "endpoint": "https://use.typekit.net/ik/WlKhEl30rMV3YFqZJmsgbH4gDuLhKucZyf3ZmpugRCbfecXJq-g_IKMkw2IowDbuWDmcZRwDF2qkFD6oFRmRwhbkFhwtZ28c5gGMJ68ciWsuScIlSYbKIeZkZA81-YblShB0Sku3Scv7fbKImsMMeMb6MKG4fVN9IMMjgPMfH6qJqcqbMs6BJMHbMS-N6v9e.js",
       "method": "GET",
@@ -9,7 +9,7 @@
       "content_type": "text/javascript;charset=utf-8"
     },
     {
-      "source_url": "https://purduethink.com/our-people",
+      "source_url": "https://purduethink.com/interview-process",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/legacy.js",
       "method": "GET",
@@ -17,7 +17,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/our-people",
+      "source_url": "https://purduethink.com/interview-process",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/modern.js",
       "method": "GET",
@@ -25,7 +25,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/our-people",
+      "source_url": "https://purduethink.com/interview-process",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-runtime-199f67a032f4c190-min.en-US.js",
       "method": "GET",
@@ -33,7 +33,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/our-people",
+      "source_url": "https://purduethink.com/interview-process",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-moment-js-vendor-6f2a1f6ec9a41489-min.en-US.js",
       "method": "GET",
@@ -41,7 +41,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/our-people",
+      "source_url": "https://purduethink.com/interview-process",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/cldr-resource-pack-c5175d8ac6fd7505-min.en-US.js",
       "method": "GET",
@@ -49,7 +49,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/our-people",
+      "source_url": "https://purduethink.com/interview-process",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-stable-fbd854d40b0804b7-min.en-US.js",
       "method": "GET",
@@ -57,7 +57,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/our-people",
+      "source_url": "https://purduethink.com/interview-process",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-064f6d2792a6e103-min.en-US.js",
       "method": "GET",
@@ -65,7 +65,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/our-people",
+      "source_url": "https://purduethink.com/interview-process",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-7f912cbcedc18d33-min.en-US.js",
       "method": "GET",
@@ -73,7 +73,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/our-people",
+      "source_url": "https://purduethink.com/interview-process",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/performance-8ae183c38ee3dcc4-min.en-US.js",
       "method": "GET",
@@ -81,15 +81,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/our-people",
-      "type": "script_hint",
-      "endpoint": "https://definitions.sqspcdn.com/website-component-definition/static-assets/website.components.spacer/2593f210-35ea-4ec5-a774-43cdb7027c35_213/website.components.spacer.visitor.js",
-      "method": "GET",
-      "status_sample": 200,
-      "content_type": "application/javascript; charset=utf-8"
-    },
-    {
-      "source_url": "https://purduethink.com/our-people",
+      "source_url": "https://purduethink.com/interview-process",
       "type": "script_hint",
       "endpoint": "https://static1.squarespace.com/static/vta/5c5a519771c10ba3470d8101/scripts/site-bundle.54f91f1e22e847285826e297d193698a.js",
       "method": "GET",
@@ -97,7 +89,7 @@
       "content_type": "application/javascript; charset=UTF-8"
     },
     {
-      "source_url": "https://purduethink.com/about-consulting",
+      "source_url": "https://purduethink.com/project-teams",
       "type": "script_hint",
       "endpoint": "https://use.typekit.net/ik/WlKhEl30rMV3YFqZJmsgbH4gDuLhKucZyf3ZmpugRCbfecXJq-g_IKMkw2IowDbuWDmcZRwDF2qkFD6oFRmRwhbkFhwtZ28c5gGMJ68ciWsuScIlSYbKIeZkZA81-YblShB0Sku3Scv7fbKImsMMeMb6MKG4fVN9IMMjgPMfH6qJqcqbMs6BJMHbMS-N6v9e.js",
       "method": "GET",
@@ -105,7 +97,7 @@
       "content_type": "text/javascript;charset=utf-8"
     },
     {
-      "source_url": "https://purduethink.com/about-consulting",
+      "source_url": "https://purduethink.com/project-teams",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/legacy.js",
       "method": "GET",
@@ -113,7 +105,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/about-consulting",
+      "source_url": "https://purduethink.com/project-teams",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/modern.js",
       "method": "GET",
@@ -121,7 +113,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/about-consulting",
+      "source_url": "https://purduethink.com/project-teams",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-runtime-199f67a032f4c190-min.en-US.js",
       "method": "GET",
@@ -129,7 +121,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/about-consulting",
+      "source_url": "https://purduethink.com/project-teams",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-moment-js-vendor-6f2a1f6ec9a41489-min.en-US.js",
       "method": "GET",
@@ -137,7 +129,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/about-consulting",
+      "source_url": "https://purduethink.com/project-teams",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/cldr-resource-pack-c5175d8ac6fd7505-min.en-US.js",
       "method": "GET",
@@ -145,7 +137,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/about-consulting",
+      "source_url": "https://purduethink.com/project-teams",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-stable-fbd854d40b0804b7-min.en-US.js",
       "method": "GET",
@@ -153,7 +145,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/about-consulting",
+      "source_url": "https://purduethink.com/project-teams",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-064f6d2792a6e103-min.en-US.js",
       "method": "GET",
@@ -161,7 +153,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/about-consulting",
+      "source_url": "https://purduethink.com/project-teams",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-7f912cbcedc18d33-min.en-US.js",
       "method": "GET",
@@ -169,7 +161,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/about-consulting",
+      "source_url": "https://purduethink.com/project-teams",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/performance-8ae183c38ee3dcc4-min.en-US.js",
       "method": "GET",
@@ -177,15 +169,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/about-consulting",
-      "type": "script_hint",
-      "endpoint": "https://definitions.sqspcdn.com/website-component-definition/static-assets/website.components.spacer/2593f210-35ea-4ec5-a774-43cdb7027c35_213/website.components.spacer.visitor.js",
-      "method": "GET",
-      "status_sample": 200,
-      "content_type": "application/javascript; charset=utf-8"
-    },
-    {
-      "source_url": "https://purduethink.com/about-consulting",
+      "source_url": "https://purduethink.com/project-teams",
       "type": "script_hint",
       "endpoint": "https://static1.squarespace.com/static/vta/5c5a519771c10ba3470d8101/scripts/site-bundle.54f91f1e22e847285826e297d193698a.js",
       "method": "GET",
@@ -193,7 +177,7 @@
       "content_type": "application/javascript; charset=UTF-8"
     },
     {
-      "source_url": "https://purduethink.com/recruitment-timeline",
+      "source_url": "https://purduethink.com/news-events",
       "type": "script_hint",
       "endpoint": "https://use.typekit.net/ik/WlKhEl30rMV3YFqZJmsgbH4gDuLhKucZyf3ZmpugRCbfecXJq-g_IKMkw2IowDbuWDmcZRwDF2qkFD6oFRmRwhbkFhwtZ28c5gGMJ68ciWsuScIlSYbKIeZkZA81-YblShB0Sku3Scv7fbKImsMMeMb6MKG4fVN9IMMjgPMfH6qJqcqbMs6BJMHbMS-N6v9e.js",
       "method": "GET",
@@ -201,7 +185,7 @@
       "content_type": "text/javascript;charset=utf-8"
     },
     {
-      "source_url": "https://purduethink.com/recruitment-timeline",
+      "source_url": "https://purduethink.com/news-events",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/legacy.js",
       "method": "GET",
@@ -209,7 +193,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/recruitment-timeline",
+      "source_url": "https://purduethink.com/news-events",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/modern.js",
       "method": "GET",
@@ -217,7 +201,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/recruitment-timeline",
+      "source_url": "https://purduethink.com/news-events",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-runtime-199f67a032f4c190-min.en-US.js",
       "method": "GET",
@@ -225,7 +209,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/recruitment-timeline",
+      "source_url": "https://purduethink.com/news-events",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-moment-js-vendor-6f2a1f6ec9a41489-min.en-US.js",
       "method": "GET",
@@ -233,7 +217,7 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/recruitment-timeline",
+      "source_url": "https://purduethink.com/news-events",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/cldr-resource-pack-c5175d8ac6fd7505-min.en-US.js",
       "method": "GET",
@@ -241,97 +225,35 @@
       "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/recruitment-timeline",
+      "source_url": "https://purduethink.com/news-events",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-stable-fbd854d40b0804b7-min.en-US.js",
-      "method": "GET"
+      "method": "GET",
+      "status_sample": 200,
+      "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/recruitment-timeline",
+      "source_url": "https://purduethink.com/news-events",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-064f6d2792a6e103-min.en-US.js",
-      "method": "GET"
+      "method": "GET",
+      "status_sample": 200,
+      "content_type": "text/javascript"
     },
     {
-      "source_url": "https://purduethink.com/recruitment-timeline",
+      "source_url": "https://purduethink.com/news-events",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-7f912cbcedc18d33-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/recruitment-timeline",
+      "source_url": "https://purduethink.com/news-events",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/performance-8ae183c38ee3dcc4-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/recruitment-timeline",
-      "type": "script_hint",
-      "endpoint": "https://static1.squarespace.com/static/vta/5c5a519771c10ba3470d8101/scripts/site-bundle.54f91f1e22e847285826e297d193698a.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/our-alumni",
-      "type": "script_hint",
-      "endpoint": "https://use.typekit.net/ik/WlKhEl30rMV3YFqZJmsgbH4gDuLhKucZyf3ZmpugRCbfecXJq-g_IKMkw2IowDbuWDmcZRwDF2qkFD6oFRmRwhbkFhwtZ28c5gGMJ68ciWsuScIlSYbKIeZkZA81-YblShB0Sku3Scv7fbKImsMMeMb6MKG4fVN9IMMjgPMfH6qJqcqbMs6BJMHbMS-N6v9e.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/our-alumni",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/legacy.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/our-alumni",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/modern.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/our-alumni",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-runtime-199f67a032f4c190-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/our-alumni",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-moment-js-vendor-6f2a1f6ec9a41489-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/our-alumni",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/cldr-resource-pack-c5175d8ac6fd7505-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/our-alumni",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-stable-fbd854d40b0804b7-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/our-alumni",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-064f6d2792a6e103-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/our-alumni",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-7f912cbcedc18d33-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/our-alumni",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/performance-8ae183c38ee3dcc4-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/our-alumni",
+      "source_url": "https://purduethink.com/news-events",
       "type": "script_hint",
       "endpoint": "https://static1.squarespace.com/static/vta/5c5a519771c10ba3470d8101/scripts/site-bundle.54f91f1e22e847285826e297d193698a.js",
       "method": "GET"
@@ -403,67 +325,67 @@
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/home",
+      "source_url": "https://purduethink.com/newsletter-1",
       "type": "script_hint",
       "endpoint": "https://use.typekit.net/ik/WlKhEl30rMV3YFqZJmsgbH4gDuLhKucZyf3ZmpugRCbfecXJq-g_IKMkw2IowDbuWDmcZRwDF2qkFD6oFRmRwhbkFhwtZ28c5gGMJ68ciWsuScIlSYbKIeZkZA81-YblShB0Sku3Scv7fbKImsMMeMb6MKG4fVN9IMMjgPMfH6qJqcqbMs6BJMHbMS-N6v9e.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/home",
+      "source_url": "https://purduethink.com/newsletter-1",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/legacy.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/home",
+      "source_url": "https://purduethink.com/newsletter-1",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/modern.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/home",
+      "source_url": "https://purduethink.com/newsletter-1",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-runtime-199f67a032f4c190-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/home",
+      "source_url": "https://purduethink.com/newsletter-1",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-moment-js-vendor-6f2a1f6ec9a41489-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/home",
+      "source_url": "https://purduethink.com/newsletter-1",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/cldr-resource-pack-c5175d8ac6fd7505-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/home",
+      "source_url": "https://purduethink.com/newsletter-1",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-stable-fbd854d40b0804b7-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/home",
+      "source_url": "https://purduethink.com/newsletter-1",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-064f6d2792a6e103-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/home",
+      "source_url": "https://purduethink.com/newsletter-1",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-7f912cbcedc18d33-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/home",
+      "source_url": "https://purduethink.com/newsletter-1",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/performance-8ae183c38ee3dcc4-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/home",
+      "source_url": "https://purduethink.com/newsletter-1",
       "type": "script_hint",
       "endpoint": "https://static1.squarespace.com/static/vta/5c5a519771c10ba3470d8101/scripts/site-bundle.54f91f1e22e847285826e297d193698a.js",
       "method": "GET"
@@ -535,67 +457,139 @@
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/newsletter-1",
+      "source_url": "https://purduethink.com/our-people",
       "type": "script_hint",
       "endpoint": "https://use.typekit.net/ik/WlKhEl30rMV3YFqZJmsgbH4gDuLhKucZyf3ZmpugRCbfecXJq-g_IKMkw2IowDbuWDmcZRwDF2qkFD6oFRmRwhbkFhwtZ28c5gGMJ68ciWsuScIlSYbKIeZkZA81-YblShB0Sku3Scv7fbKImsMMeMb6MKG4fVN9IMMjgPMfH6qJqcqbMs6BJMHbMS-N6v9e.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/newsletter-1",
+      "source_url": "https://purduethink.com/our-people",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/legacy.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/newsletter-1",
+      "source_url": "https://purduethink.com/our-people",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/modern.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/newsletter-1",
+      "source_url": "https://purduethink.com/our-people",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-runtime-199f67a032f4c190-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/newsletter-1",
+      "source_url": "https://purduethink.com/our-people",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-moment-js-vendor-6f2a1f6ec9a41489-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/newsletter-1",
+      "source_url": "https://purduethink.com/our-people",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/cldr-resource-pack-c5175d8ac6fd7505-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/newsletter-1",
+      "source_url": "https://purduethink.com/our-people",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-stable-fbd854d40b0804b7-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/newsletter-1",
+      "source_url": "https://purduethink.com/our-people",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-064f6d2792a6e103-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/newsletter-1",
+      "source_url": "https://purduethink.com/our-people",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-7f912cbcedc18d33-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/newsletter-1",
+      "source_url": "https://purduethink.com/our-people",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/performance-8ae183c38ee3dcc4-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/newsletter-1",
+      "source_url": "https://purduethink.com/our-people",
+      "type": "script_hint",
+      "endpoint": "https://definitions.sqspcdn.com/website-component-definition/static-assets/website.components.spacer/2593f210-35ea-4ec5-a774-43cdb7027c35_213/website.components.spacer.visitor.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/our-people",
+      "type": "script_hint",
+      "endpoint": "https://static1.squarespace.com/static/vta/5c5a519771c10ba3470d8101/scripts/site-bundle.54f91f1e22e847285826e297d193698a.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/recruitment-timeline",
+      "type": "script_hint",
+      "endpoint": "https://use.typekit.net/ik/WlKhEl30rMV3YFqZJmsgbH4gDuLhKucZyf3ZmpugRCbfecXJq-g_IKMkw2IowDbuWDmcZRwDF2qkFD6oFRmRwhbkFhwtZ28c5gGMJ68ciWsuScIlSYbKIeZkZA81-YblShB0Sku3Scv7fbKImsMMeMb6MKG4fVN9IMMjgPMfH6qJqcqbMs6BJMHbMS-N6v9e.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/recruitment-timeline",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/legacy.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/recruitment-timeline",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/modern.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/recruitment-timeline",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-runtime-199f67a032f4c190-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/recruitment-timeline",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-moment-js-vendor-6f2a1f6ec9a41489-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/recruitment-timeline",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/cldr-resource-pack-c5175d8ac6fd7505-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/recruitment-timeline",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-stable-fbd854d40b0804b7-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/recruitment-timeline",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-064f6d2792a6e103-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/recruitment-timeline",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-7f912cbcedc18d33-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/recruitment-timeline",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/performance-8ae183c38ee3dcc4-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/recruitment-timeline",
       "type": "script_hint",
       "endpoint": "https://static1.squarespace.com/static/vta/5c5a519771c10ba3470d8101/scripts/site-bundle.54f91f1e22e847285826e297d193698a.js",
       "method": "GET"
@@ -673,133 +667,277 @@
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/project-teams",
+      "source_url": "https://purduethink.com/our-alumni",
       "type": "script_hint",
       "endpoint": "https://use.typekit.net/ik/WlKhEl30rMV3YFqZJmsgbH4gDuLhKucZyf3ZmpugRCbfecXJq-g_IKMkw2IowDbuWDmcZRwDF2qkFD6oFRmRwhbkFhwtZ28c5gGMJ68ciWsuScIlSYbKIeZkZA81-YblShB0Sku3Scv7fbKImsMMeMb6MKG4fVN9IMMjgPMfH6qJqcqbMs6BJMHbMS-N6v9e.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/project-teams",
+      "source_url": "https://purduethink.com/our-alumni",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/legacy.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/project-teams",
+      "source_url": "https://purduethink.com/our-alumni",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/modern.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/project-teams",
+      "source_url": "https://purduethink.com/our-alumni",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-runtime-199f67a032f4c190-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/project-teams",
+      "source_url": "https://purduethink.com/our-alumni",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-moment-js-vendor-6f2a1f6ec9a41489-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/project-teams",
+      "source_url": "https://purduethink.com/our-alumni",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/cldr-resource-pack-c5175d8ac6fd7505-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/project-teams",
+      "source_url": "https://purduethink.com/our-alumni",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-stable-fbd854d40b0804b7-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/project-teams",
+      "source_url": "https://purduethink.com/our-alumni",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-064f6d2792a6e103-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/project-teams",
+      "source_url": "https://purduethink.com/our-alumni",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-7f912cbcedc18d33-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/project-teams",
+      "source_url": "https://purduethink.com/our-alumni",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/performance-8ae183c38ee3dcc4-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/project-teams",
+      "source_url": "https://purduethink.com/our-alumni",
       "type": "script_hint",
       "endpoint": "https://static1.squarespace.com/static/vta/5c5a519771c10ba3470d8101/scripts/site-bundle.54f91f1e22e847285826e297d193698a.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/news-events",
+      "source_url": "https://purduethink.com/new-page",
       "type": "script_hint",
       "endpoint": "https://use.typekit.net/ik/WlKhEl30rMV3YFqZJmsgbH4gDuLhKucZyf3ZmpugRCbfecXJq-g_IKMkw2IowDbuWDmcZRwDF2qkFD6oFRmRwhbkFhwtZ28c5gGMJ68ciWsuScIlSYbKIeZkZA81-YblShB0Sku3Scv7fbKImsMMeMb6MKG4fVN9IMMjgPMfH6qJqcqbMs6BJMHbMS-N6v9e.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/news-events",
+      "source_url": "https://purduethink.com/new-page",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/legacy.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/news-events",
+      "source_url": "https://purduethink.com/new-page",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/modern.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/news-events",
+      "source_url": "https://purduethink.com/new-page",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-runtime-199f67a032f4c190-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/news-events",
+      "source_url": "https://purduethink.com/new-page",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-moment-js-vendor-6f2a1f6ec9a41489-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/news-events",
+      "source_url": "https://purduethink.com/new-page",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/cldr-resource-pack-c5175d8ac6fd7505-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/news-events",
+      "source_url": "https://purduethink.com/new-page",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-stable-fbd854d40b0804b7-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/news-events",
+      "source_url": "https://purduethink.com/new-page",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-064f6d2792a6e103-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/news-events",
+      "source_url": "https://purduethink.com/new-page",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-7f912cbcedc18d33-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/news-events",
+      "source_url": "https://purduethink.com/new-page",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/performance-8ae183c38ee3dcc4-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/news-events",
+      "source_url": "https://purduethink.com/new-page",
+      "type": "script_hint",
+      "endpoint": "https://static1.squarespace.com/static/vta/5c5a519771c10ba3470d8101/scripts/site-bundle.54f91f1e22e847285826e297d193698a.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/about-consulting",
+      "type": "script_hint",
+      "endpoint": "https://use.typekit.net/ik/WlKhEl30rMV3YFqZJmsgbH4gDuLhKucZyf3ZmpugRCbfecXJq-g_IKMkw2IowDbuWDmcZRwDF2qkFD6oFRmRwhbkFhwtZ28c5gGMJ68ciWsuScIlSYbKIeZkZA81-YblShB0Sku3Scv7fbKImsMMeMb6MKG4fVN9IMMjgPMfH6qJqcqbMs6BJMHbMS-N6v9e.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/about-consulting",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/legacy.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/about-consulting",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/modern.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/about-consulting",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-runtime-199f67a032f4c190-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/about-consulting",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-moment-js-vendor-6f2a1f6ec9a41489-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/about-consulting",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/cldr-resource-pack-c5175d8ac6fd7505-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/about-consulting",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-stable-fbd854d40b0804b7-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/about-consulting",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-064f6d2792a6e103-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/about-consulting",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-7f912cbcedc18d33-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/about-consulting",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/performance-8ae183c38ee3dcc4-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/about-consulting",
+      "type": "script_hint",
+      "endpoint": "https://definitions.sqspcdn.com/website-component-definition/static-assets/website.components.spacer/2593f210-35ea-4ec5-a774-43cdb7027c35_213/website.components.spacer.visitor.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/about-consulting",
+      "type": "script_hint",
+      "endpoint": "https://static1.squarespace.com/static/vta/5c5a519771c10ba3470d8101/scripts/site-bundle.54f91f1e22e847285826e297d193698a.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/projects",
+      "type": "script_hint",
+      "endpoint": "https://use.typekit.net/ik/WlKhEl30rMV3YFqZJmsgbH4gDuLhKucZyf3ZmpugRCbfecXJq-g_IKMkw2IowDbuWDmcZRwDF2qkFD6oFRmRwhbkFhwtZ28c5gGMJ68ciWsuScIlSYbKIeZkZA81-YblShB0Sku3Scv7fbKImsMMeMb6MKG4fVN9IMMjgPMfH6qJqcqbMs6BJMHbMS-N6v9e.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/projects",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/legacy.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/projects",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/modern.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/projects",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-runtime-199f67a032f4c190-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/projects",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-moment-js-vendor-6f2a1f6ec9a41489-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/projects",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/cldr-resource-pack-c5175d8ac6fd7505-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/projects",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-stable-fbd854d40b0804b7-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/projects",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-064f6d2792a6e103-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/projects",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-7f912cbcedc18d33-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/projects",
+      "type": "script_hint",
+      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/performance-8ae183c38ee3dcc4-min.en-US.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/projects",
+      "type": "script_hint",
+      "endpoint": "https://definitions.sqspcdn.com/website-component-definition/static-assets/website.components.spacer/2593f210-35ea-4ec5-a774-43cdb7027c35_213/website.components.spacer.visitor.js",
+      "method": "GET"
+    },
+    {
+      "source_url": "https://purduethink.com/projects",
       "type": "script_hint",
       "endpoint": "https://static1.squarespace.com/static/vta/5c5a519771c10ba3470d8101/scripts/site-bundle.54f91f1e22e847285826e297d193698a.js",
       "method": "GET"
@@ -877,133 +1015,67 @@
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/interview-process",
+      "source_url": "https://purduethink.com/home",
       "type": "script_hint",
       "endpoint": "https://use.typekit.net/ik/WlKhEl30rMV3YFqZJmsgbH4gDuLhKucZyf3ZmpugRCbfecXJq-g_IKMkw2IowDbuWDmcZRwDF2qkFD6oFRmRwhbkFhwtZ28c5gGMJ68ciWsuScIlSYbKIeZkZA81-YblShB0Sku3Scv7fbKImsMMeMb6MKG4fVN9IMMjgPMfH6qJqcqbMs6BJMHbMS-N6v9e.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/interview-process",
+      "source_url": "https://purduethink.com/home",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/legacy.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/interview-process",
+      "source_url": "https://purduethink.com/home",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/modern.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/interview-process",
+      "source_url": "https://purduethink.com/home",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-runtime-199f67a032f4c190-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/interview-process",
+      "source_url": "https://purduethink.com/home",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-moment-js-vendor-6f2a1f6ec9a41489-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/interview-process",
+      "source_url": "https://purduethink.com/home",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/cldr-resource-pack-c5175d8ac6fd7505-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/interview-process",
+      "source_url": "https://purduethink.com/home",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-stable-fbd854d40b0804b7-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/interview-process",
+      "source_url": "https://purduethink.com/home",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-064f6d2792a6e103-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/interview-process",
+      "source_url": "https://purduethink.com/home",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-7f912cbcedc18d33-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/interview-process",
+      "source_url": "https://purduethink.com/home",
       "type": "script_hint",
       "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/performance-8ae183c38ee3dcc4-min.en-US.js",
       "method": "GET"
     },
     {
-      "source_url": "https://purduethink.com/interview-process",
-      "type": "script_hint",
-      "endpoint": "https://static1.squarespace.com/static/vta/5c5a519771c10ba3470d8101/scripts/site-bundle.54f91f1e22e847285826e297d193698a.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/new-page",
-      "type": "script_hint",
-      "endpoint": "https://use.typekit.net/ik/WlKhEl30rMV3YFqZJmsgbH4gDuLhKucZyf3ZmpugRCbfecXJq-g_IKMkw2IowDbuWDmcZRwDF2qkFD6oFRmRwhbkFhwtZ28c5gGMJ68ciWsuScIlSYbKIeZkZA81-YblShB0Sku3Scv7fbKImsMMeMb6MKG4fVN9IMMjgPMfH6qJqcqbMs6BJMHbMS-N6v9e.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/new-page",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/legacy.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/new-page",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/modern.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/new-page",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-runtime-199f67a032f4c190-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/new-page",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-moment-js-vendor-6f2a1f6ec9a41489-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/new-page",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/cldr-resource-pack-c5175d8ac6fd7505-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/new-page",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-stable-fbd854d40b0804b7-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/new-page",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-064f6d2792a6e103-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/new-page",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-7f912cbcedc18d33-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/new-page",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/performance-8ae183c38ee3dcc4-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/new-page",
+      "source_url": "https://purduethink.com/home",
       "type": "script_hint",
       "endpoint": "https://static1.squarespace.com/static/vta/5c5a519771c10ba3470d8101/scripts/site-bundle.54f91f1e22e847285826e297d193698a.js",
       "method": "GET"
@@ -1070,78 +1142,6 @@
     },
     {
       "source_url": "https://purduethink.com/",
-      "type": "script_hint",
-      "endpoint": "https://static1.squarespace.com/static/vta/5c5a519771c10ba3470d8101/scripts/site-bundle.54f91f1e22e847285826e297d193698a.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/projects",
-      "type": "script_hint",
-      "endpoint": "https://use.typekit.net/ik/WlKhEl30rMV3YFqZJmsgbH4gDuLhKucZyf3ZmpugRCbfecXJq-g_IKMkw2IowDbuWDmcZRwDF2qkFD6oFRmRwhbkFhwtZ28c5gGMJ68ciWsuScIlSYbKIeZkZA81-YblShB0Sku3Scv7fbKImsMMeMb6MKG4fVN9IMMjgPMfH6qJqcqbMs6BJMHbMS-N6v9e.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/projects",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/legacy.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/projects",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/@sqs/polyfiller/1.6/modern.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/projects",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-runtime-199f67a032f4c190-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/projects",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/extract-css-moment-js-vendor-6f2a1f6ec9a41489-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/projects",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/cldr-resource-pack-c5175d8ac6fd7505-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/projects",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-stable-fbd854d40b0804b7-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/projects",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-vendors-064f6d2792a6e103-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/projects",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/common-7f912cbcedc18d33-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/projects",
-      "type": "script_hint",
-      "endpoint": "https://assets.squarespace.com/universal/scripts-compressed/performance-8ae183c38ee3dcc4-min.en-US.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/projects",
-      "type": "script_hint",
-      "endpoint": "https://definitions.sqspcdn.com/website-component-definition/static-assets/website.components.spacer/2593f210-35ea-4ec5-a774-43cdb7027c35_213/website.components.spacer.visitor.js",
-      "method": "GET"
-    },
-    {
-      "source_url": "https://purduethink.com/projects",
       "type": "script_hint",
       "endpoint": "https://static1.squarespace.com/static/vta/5c5a519771c10ba3470d8101/scripts/site-bundle.54f91f1e22e847285826e297d193698a.js",
       "method": "GET"
