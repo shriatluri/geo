@@ -17,6 +17,9 @@ from ..shared.models import (
     PriorityLevel, ImpactLevel, EffortLevel, BusinessInfo
 )
 from ..shared.llm_client import LLMClient
+from .analyzer import GEOAnalyzer
+from .generator import GEOGenerator
+from .validator import GEOValidator
 
 
 class GEOAgent(BaseAgent):
@@ -32,20 +35,107 @@ class GEOAgent(BaseAgent):
     
     def __init__(self, llm_client: LLMClient):
         super().__init__("GEO Agent", llm_client)
+        self.analyzer = GEOAnalyzer()
+        self.generator = GEOGenerator()
+        self.validator = GEOValidator()
         self.data_validators = self._initialize_validators()
         
     def get_agent_type(self) -> str:
         return AgentType.GEO
     
-    async def analyze(self, website_data: WebsiteData) -> AgentResponse:
+    async def analyze(self, website_data: WebsiteData, client_input: Dict[str, Any] = None) -> AgentResponse:
         """
-        Analyze website for data accuracy and consistency.
+        Analyze website for data accuracy and consistency using modular components.
         
         Args:
             website_data: Website data to analyze
+            client_input: Optional client input data for enhanced analysis
             
         Returns:
             AgentResponse with accuracy optimization recommendations
+        """
+        start_time = time.time()
+        self._log_analysis_start(str(website_data.url))
+        
+        try:
+            # Use the new analyzer for comprehensive business information analysis
+            business_analysis = self.analyzer.analyze_business_information(website_data)
+            contact_analysis = self.analyzer.analyze_contact_accuracy(website_data)
+            location_analysis = self.analyzer.analyze_location_accuracy(website_data)
+            credibility_analysis = self.analyzer.analyze_business_credibility(website_data)
+            
+            # Generate standardized business data and improvements
+            business_data = self.generator.generate_business_data(business_analysis, client_input)
+            nap_standardization = self.generator.generate_nap_standardization(business_analysis)
+            contact_optimization = self.generator.generate_contact_optimization(contact_analysis)
+            local_business_schema = self.generator.generate_local_business_schema(business_analysis, client_input)
+            accuracy_corrections = self.generator.generate_accuracy_corrections(business_analysis)
+            verification_checklist = self.generator.generate_verification_checklist(business_analysis)
+            
+            # Validate all generated content
+            business_validation = self.validator.validate_business_data(business_data)
+            nap_validation = self.validator.validate_nap_consistency(nap_standardization)
+            contact_validation = self.validator.validate_contact_optimization(contact_optimization)
+            schema_validation = self.validator.validate_local_business_schema(local_business_schema)
+            corrections_validation = self.validator.validate_accuracy_corrections(accuracy_corrections)
+            checklist_validation = self.validator.validate_verification_checklist(verification_checklist)
+            
+            # Check overall implementation readiness
+            all_generated_content = {
+                "business_data": business_validation,
+                "nap_standardization": nap_validation,
+                "contact_optimization": contact_validation,
+                "local_business_schema": schema_validation,
+                "accuracy_corrections": corrections_validation,
+                "verification_checklist": checklist_validation
+            }
+            implementation_readiness = self.validator.validate_implementation_readiness(all_generated_content)
+            
+            # Convert analysis results to AnalysisResult format for compatibility
+            results = self._convert_to_analysis_results(
+                business_analysis, contact_analysis, location_analysis, credibility_analysis,
+                business_data, nap_standardization, contact_optimization, local_business_schema,
+                accuracy_corrections, verification_checklist, implementation_readiness
+            )
+            
+            processing_time = time.time() - start_time
+            confidence = implementation_readiness.get("readiness_score", 0.0)
+            
+            self._log_analysis_complete(str(website_data.url), len(results), confidence)
+            
+            return self._create_response(
+                results=results,
+                confidence=confidence,
+                processing_time=processing_time,
+                metadata={
+                    "business_analysis": business_analysis,
+                    "contact_analysis": contact_analysis,
+                    "location_analysis": location_analysis,
+                    "credibility_analysis": credibility_analysis,
+                    "generated_content": all_generated_content,
+                    "implementation_readiness": implementation_readiness,
+                    "validation_summary": {
+                        "business_valid": business_validation.get("is_valid", False),
+                        "nap_consistent": nap_validation.get("is_consistent", False),
+                        "schema_valid": schema_validation.get("is_valid", False),
+                        "ready_for_implementation": implementation_readiness.get("ready_for_implementation", False)
+                    }
+                }
+            )
+            
+        except Exception as e:
+            self._log_error(e, f"analyzing {website_data.url}")
+            processing_time = time.time() - start_time
+            
+            return self._create_response(
+                results=[self._create_error_result(str(e))],
+                confidence=0.0,
+                processing_time=processing_time
+            )
+    
+    async def analyze_legacy(self, website_data: WebsiteData) -> AgentResponse:
+        """
+        Legacy analyze method for backward compatibility.
         """
         start_time = time.time()
         self._log_analysis_start(str(website_data.url))
@@ -478,6 +568,146 @@ class GEOAgent(BaseAgent):
         
         total_confidence = sum(result.confidence for result in results)
         return min(total_confidence / len(results), 1.0)
+    
+    def _convert_to_analysis_results(self, *analysis_data) -> List[AnalysisResult]:
+        """Convert new analysis format to AnalysisResult objects for compatibility."""
+        results = []
+        
+        (business_analysis, contact_analysis, location_analysis, credibility_analysis,
+         business_data, nap_standardization, contact_optimization, local_business_schema,
+         accuracy_corrections, verification_checklist, implementation_readiness) = analysis_data
+        
+        # Business Analysis Results
+        if business_analysis.get("accuracy_score", 0) < 0.7:
+            results.append(AnalysisResult(
+                id="business_accuracy_low",
+                type="business_accuracy",
+                title="Low Business Information Accuracy",
+                description=f"Business information accuracy score is {business_analysis.get('accuracy_score', 0):.2f}/1.0",
+                priority=PriorityLevel.HIGH if business_analysis.get("accuracy_score", 0) < 0.5 else PriorityLevel.MEDIUM,
+                impact=ImpactLevel.HIGH,
+                effort=EffortLevel.MEDIUM,
+                recommendation="Improve business information accuracy and completeness",
+                implementation_steps=[
+                    "Verify and standardize business name across all sources",
+                    "Ensure NAP (Name, Address, Phone) consistency",
+                    "Validate contact information accuracy",
+                    "Complete missing business information fields"
+                ],
+                confidence=business_analysis.get("completeness_score", 0.0),
+                metadata={"business_analysis": business_analysis}
+            ))
+        
+        # NAP Consistency Results
+        if not nap_standardization.get("is_consistent", True):
+            results.append(AnalysisResult(
+                id="nap_inconsistency",
+                type="data_consistency",
+                title="NAP Information Inconsistency",
+                description="Name, Address, Phone information is inconsistent across sources",
+                priority=PriorityLevel.HIGH,
+                impact=ImpactLevel.HIGH,
+                effort=EffortLevel.MEDIUM,
+                recommendation="Standardize NAP information across all platforms",
+                implementation_steps=[
+                    "Create standardized business name format",
+                    "Standardize address format (USPS compliant)",
+                    "Format phone numbers consistently",
+                    "Update all online listings with consistent information"
+                ],
+                confidence=nap_standardization.get("consistency_score", 0.0),
+                metadata={"nap_validation": nap_standardization}
+            ))
+        
+        # Schema Markup Results
+        if not local_business_schema.get("is_valid", True):
+            results.append(AnalysisResult(
+                id="invalid_schema_markup",
+                type="structured_data",
+                title="Invalid or Missing LocalBusiness Schema",
+                description="LocalBusiness schema markup is missing or contains errors",
+                priority=PriorityLevel.MEDIUM,
+                impact=ImpactLevel.HIGH,
+                effort=EffortLevel.MEDIUM,
+                recommendation="Implement valid LocalBusiness schema markup",
+                implementation_steps=[
+                    "Create LocalBusiness JSON-LD schema",
+                    "Include required properties (name, address, telephone)",
+                    "Add optional properties (openingHours, description, url)",
+                    "Validate with Google Rich Results Test",
+                    "Monitor for schema errors in Search Console"
+                ],
+                confidence=local_business_schema.get("schema_score", 0.0),
+                metadata={"schema_validation": local_business_schema}
+            ))
+        
+        # Contact Optimization Results
+        contact_score = contact_optimization.get("optimization_score", 0.0)
+        if contact_score < 0.8:
+            results.append(AnalysisResult(
+                id="contact_optimization_needed",
+                type="contact_optimization",
+                title="Contact Information Optimization Needed",
+                description=f"Contact information optimization score is {contact_score:.2f}/1.0",
+                priority=PriorityLevel.MEDIUM,
+                impact=ImpactLevel.MEDIUM,
+                effort=EffortLevel.LOW,
+                recommendation="Optimize contact information presentation and accessibility",
+                implementation_steps=[
+                    "Make phone numbers clickable (tel: links)",
+                    "Make email addresses clickable (mailto: links)",
+                    "Add contact information to header and footer",
+                    "Create dedicated contact page",
+                    "Improve contact form accessibility"
+                ],
+                confidence=contact_score,
+                metadata={"contact_optimization": contact_optimization}
+            ))
+        
+        # Implementation Readiness Results
+        if not implementation_readiness.get("ready_for_implementation", False):
+            blocking_issues = implementation_readiness.get("blocking_issues", [])
+            results.append(AnalysisResult(
+                id="implementation_not_ready",
+                type="implementation_readiness",
+                title="Not Ready for Implementation",
+                description=f"Found {len(blocking_issues)} blocking issues preventing implementation",
+                priority=PriorityLevel.HIGH,
+                impact=ImpactLevel.HIGH,
+                effort=EffortLevel.MEDIUM,
+                recommendation="Resolve blocking issues before proceeding with implementation",
+                implementation_steps=[
+                    "Address validation errors",
+                    "Resolve data consistency issues",
+                    "Complete missing required information",
+                    "Verify all generated content"
+                ],
+                confidence=implementation_readiness.get("readiness_score", 0.0),
+                metadata={"blocking_issues": blocking_issues, "readiness": implementation_readiness}
+            ))
+        
+        # If no major issues found, add a positive result
+        if not results:
+            results.append(AnalysisResult(
+                id="geo_optimization_ready",
+                type="optimization_ready",
+                title="Ready for GEO Optimization",
+                description="Business information is accurate and ready for optimization",
+                priority=PriorityLevel.LOW,
+                impact=ImpactLevel.MEDIUM,
+                effort=EffortLevel.LOW,
+                recommendation="Proceed with implementing generated optimizations",
+                implementation_steps=[
+                    "Implement generated schema markup",
+                    "Apply NAP standardization",
+                    "Deploy contact optimizations",
+                    "Monitor implementation results"
+                ],
+                confidence=implementation_readiness.get("readiness_score", 1.0),
+                metadata={"all_validations_passed": True}
+            ))
+        
+        return results
     
     def _create_error_result(self, error_message: str) -> AnalysisResult:
         """Create an error result."""
