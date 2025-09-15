@@ -7,6 +7,7 @@ import re
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime
 from ..shared.models import WebsiteData, BusinessInfo
+from ..shared.llm_client import LLMClient
 
 
 class GEOGenerator:
@@ -20,9 +21,10 @@ class GEOGenerator:
     - Local business data generation
     """
     
-    def __init__(self):
+    def __init__(self, llm_client: Optional[LLMClient] = None):
         self.business_types = self._load_business_types()
         self.address_formats = self._load_address_formats()
+        self.llm_client = llm_client or LLMClient()
     
     def generate_business_data(self, analysis_result: Dict[str, Any], client_input: Dict[str, Any] = None) -> Dict[str, Any]:
         """Generate standardized business data based on analysis."""

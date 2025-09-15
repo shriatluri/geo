@@ -7,6 +7,7 @@ import re
 from typing import Dict, Any, List, Optional, Tuple
 from urllib.parse import urlparse
 from ..shared.models import WebsiteData
+from ..shared.llm_client import LLMClient
 
 
 class AEOValidator:
@@ -20,10 +21,11 @@ class AEOValidator:
     - Implementation feasibility
     """
     
-    def __init__(self):
+    def __init__(self, llm_client: Optional[LLMClient] = None):
+        self.llm_client = llm_client or LLMClient()
         self.validation_rules = self._load_validation_rules()
     
-    def validate_schema_markup(self, schema_json: str, schema_type: str) -> Dict[str, Any]:
+    async def validate_schema_markup(self, schema_json: str, schema_type: str) -> Dict[str, Any]:
         """Validate JSON-LD schema markup."""
         validation_result = {
             "is_valid": True,
@@ -53,6 +55,15 @@ class AEOValidator:
             if specific_validation["errors"]:
                 validation_result["errors"].extend(specific_validation["errors"])
                 validation_result["is_valid"] = False
+            
+            # Enhanced LLM validation
+            if self.llm_client:
+                llm_validation = await self._llm_validate_schema(schema_json, schema_type)
+                validation_result["llm_analysis"] = llm_validation
+                
+                # Incorporate LLM suggestions into warnings
+                if "suggestions" in llm_validation:
+                    validation_result["warnings"].extend(llm_validation["suggestions"])
             
         except json.JSONDecodeError as e:
             validation_result["is_valid"] = False
@@ -470,3 +481,42 @@ class AEOValidator:
                 "recommended": ["description", "location", "organizer", "endDate"]
             }
         }
+    
+    async def _llm_validate_schema(self, schema_json: str, schema_type: str) -> Dict[str, Any]:
+        """Use LLM to perform advanced schema validation."""
+        prompt = f"""
+        Perform advanced validation of this {schema_type} schema markup. Analyze for best practices, completeness, and potential improvements.
+        
+        Schema to validate:
+        {schema_json}
+        
+        Validation criteria:
+        1. Schema.org compliance and best practices
+        2. Required vs recommended properties
+        3. Data quality and accuracy
+        4. SEO optimization opportunities
+        5. Structured data testing compatibility
+        
+        Return JSON with:
+        {{
+            "validation_score": 0.85,
+            "best_practices_compliance": true/false,
+            "missing_recommended_fields": ["list of missing recommended fields"],
+            "data_quality_issues": ["list of data quality concerns"],
+            "seo_improvements": ["specific SEO optimization suggestions"],
+            "suggestions": ["actionable improvement recommendations"],
+            "overall_assessment": "brief overall assessment"
+        }}
+        """
+        
+        try:
+            response = await self.llm_client.generate_text(prompt, max_tokens=1500)
+            return json.loads(response)
+        except Exception as e:
+            return {"error": f"LLM validation failed: {str(e)}"}
+    
+    async def validate_content_with_llm(self, content: Dict[str, Any], content_type: str) -> Dict[str, Any]:
+        """Use LLM to validate any type of generated content."""
+        if self.llm_client:
+            return await self.llm_client.validate_and_improve_content(content, content_type)
+        return {"error": "No LLM client available"}

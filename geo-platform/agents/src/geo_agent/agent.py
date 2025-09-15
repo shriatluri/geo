@@ -35,9 +35,9 @@ class GEOAgent(BaseAgent):
     
     def __init__(self, llm_client: LLMClient):
         super().__init__("GEO Agent", llm_client)
-        self.analyzer = GEOAnalyzer()
-        self.generator = GEOGenerator()
-        self.validator = GEOValidator()
+        self.analyzer = GEOAnalyzer(llm_client)
+        self.generator = GEOGenerator(llm_client)
+        self.validator = GEOValidator(llm_client)
         self.data_validators = self._initialize_validators()
         
     def get_agent_type(self) -> str:

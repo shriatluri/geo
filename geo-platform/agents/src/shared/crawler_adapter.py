@@ -73,6 +73,7 @@ class CrawlerDataAdapter:
             "sitemap_urls": health_data.get("sitemap_urls", [])
         }
         
+        # return the website data model
         return WebsiteData(
             url=domain,
             html_content=page_content or f"<html><body>Content from {domain}</body></html>",

@@ -5,6 +5,7 @@ AEO Agent Generator - Generates schema markup, meta tags, and optimization code.
 import json
 from typing import Dict, Any, List, Optional
 from ..shared.models import WebsiteData, BusinessInfo
+from ..shared.llm_client import LLMClient
 
 
 class AEOGenerator:
@@ -18,20 +19,29 @@ class AEOGenerator:
     - AI-friendly content structures
     """
     
-    def __init__(self):
+    def __init__(self, llm_client: Optional[LLMClient] = None):
+        self.llm_client = llm_client or LLMClient()
         self.schema_templates = self._load_schema_templates()
     
-    def generate_schema_markup(self, schema_type: str, website_data: WebsiteData, business_info: Optional[BusinessInfo] = None) -> str:
+    async def generate_schema_markup(self, schema_type: str, website_data: WebsiteData, business_info: Optional[BusinessInfo] = None) -> str:
         """Generate JSON-LD schema markup for specified type."""
         
+        # Generate base schema
         if schema_type == "Organization":
-            return self._generate_organization_schema(website_data, business_info)
+            base_schema = self._generate_organization_schema(website_data, business_info)
         elif schema_type == "LocalBusiness":
-            return self._generate_local_business_schema(website_data, business_info)
+            base_schema = self._generate_local_business_schema(website_data, business_info)
         elif schema_type == "FAQ":
-            return self._generate_faq_schema(website_data)
+            base_schema = self._generate_faq_schema(website_data)
         else:
-            return self._generate_basic_schema(schema_type, website_data)
+            base_schema = self._generate_basic_schema(schema_type, website_data)
+        
+        # Enhance with LLM if available
+        if self.llm_client:
+            enhanced_schema = await self._llm_enhance_schema(base_schema, website_data, schema_type)
+            return enhanced_schema
+        
+        return base_schema
     
     def generate_meta_tags(self, website_data: WebsiteData, analysis: Dict[str, Any]) -> Dict[str, str]:
         """Generate optimized meta tags."""
@@ -227,3 +237,40 @@ class AEOGenerator:
                 "recommended": ["acceptedAnswer"]
             }
         }
+    
+    async def _llm_enhance_schema(self, base_schema: str, website_data: WebsiteData, schema_type: str) -> str:
+        """Use LLM to enhance and validate schema markup."""
+        content_text = (website_data.extracted_text or "")[:4000]  # Limit for token management
+        
+        prompt = f"""
+        Enhance and validate this {schema_type} schema markup. Improve it based on the website content and best practices.
+        
+        Current Schema:
+        {base_schema}
+        
+        Website Content (first 4000 chars):
+        {content_text}
+        
+        Website Metadata:
+        - URL: {website_data.url}
+        - Title: {website_data.title or "N/A"}
+        - Description: {website_data.meta_description or "N/A"}
+        
+        Instructions:
+        1. Enhance the schema with additional relevant properties
+        2. Ensure all required fields are present and accurate
+        3. Add recommended properties where possible
+        4. Validate JSON-LD syntax
+        5. Return only valid JSON-LD (no explanations)
+        
+        Enhanced Schema:
+        """
+        
+        try:
+            enhanced = await self.llm_client.generate_text(prompt, max_tokens=2000)
+            # Validate that it's proper JSON
+            json.loads(enhanced)
+            return enhanced
+        except Exception as e:
+            # Fall back to base schema if LLM enhancement fails
+            return base_schema

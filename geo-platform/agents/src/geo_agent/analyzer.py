@@ -8,6 +8,7 @@ from typing import Dict, Any, List, Optional, Tuple
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from ..shared.models import WebsiteData, BusinessInfo
+from ..shared.llm_client import LLMClient
 
 
 class GEOAnalyzer:
@@ -21,14 +22,19 @@ class GEOAnalyzer:
     - NAP (Name, Address, Phone) consistency
     """
     
-    def __init__(self):
+    def __init__(self, llm_client: Optional[LLMClient] = None):
         self.business_patterns = self._load_business_patterns()
         self.location_indicators = self._load_location_indicators()
+        self.llm_client = llm_client or LLMClient()
     
-    def analyze_business_information(self, website_data: WebsiteData) -> Dict[str, Any]:
-        """Analyze business information accuracy and completeness."""
+    async def analyze_business_information(self, website_data: WebsiteData) -> Dict[str, Any]:
+        """Analyze business information accuracy and completeness using LLM assistance."""
+        # Get LLM-enhanced business information extraction
+        llm_business_info = await self._llm_extract_business_info(website_data)
+        
         analysis_result = {
             "business_name": self._extract_business_name(website_data),
+            "llm_business_info": llm_business_info,  # Add LLM results
             "contact_information": self._analyze_contact_info(website_data),
             "location_data": self._analyze_location_data(website_data),
             "nap_consistency": self._analyze_nap_consistency(website_data),
@@ -38,6 +44,9 @@ class GEOAnalyzer:
             "issues": [],
             "recommendations": []
         }
+        
+        # Enhance analysis with LLM insights
+        analysis_result = await self._enhance_with_llm_analysis(analysis_result, website_data)
         
         # Calculate accuracy and completeness scores
         scores = self._calculate_business_scores(analysis_result)
@@ -759,3 +768,64 @@ class GEOAnalyzer:
     def _find_contact_pages(self, soup) -> List[str]:
         """Find contact pages."""
         return []
+    
+    # LLM Integration Methods
+    async def _llm_extract_business_info(self, website_data: WebsiteData) -> Dict[str, Any]:
+        """Use LLM to extract comprehensive business information."""
+        try:
+            if not website_data.html_content:
+                return {"error": "No HTML content available"}
+            
+            # Use the LLM client to extract business information
+            business_info = await self.llm_client.extract_business_info(website_data.html_content)
+            return business_info
+        except Exception as e:
+            return {"error": f"LLM extraction failed: {str(e)}"}
+    
+    async def _enhance_with_llm_analysis(self, analysis_result: Dict[str, Any], website_data: WebsiteData) -> Dict[str, Any]:
+        """Enhance analysis results with LLM insights."""
+        try:
+            # Create NAP data for consistency analysis
+            nap_data = []
+            
+            # Add traditional extraction results
+            if analysis_result["business_name"]:
+                nap_data.append({
+                    "source": "traditional_extraction",
+                    "name": analysis_result["business_name"]["primary_name"],
+                    "address": analysis_result["location_data"]["primary_location"],
+                    "phone": analysis_result["contact_information"]["phones"][0] if analysis_result["contact_information"]["phones"] else None
+                })
+            
+            # Add LLM extraction results
+            llm_info = analysis_result.get("llm_business_info", {})
+            if llm_info and "contact_info" in llm_info:
+                nap_data.append({
+                    "source": "llm_extraction",
+                    "name": llm_info.get("business_name"),
+                    "address": llm_info["contact_info"].get("address"),
+                    "phone": llm_info["contact_info"].get("phone")
+                })
+            
+            # Analyze NAP consistency with LLM
+            if len(nap_data) > 1:
+                nap_consistency = await self.llm_client.analyze_nap_consistency(nap_data)
+                analysis_result["llm_nap_analysis"] = nap_consistency
+            
+            # Get LLM recommendations for improvements
+            content_summary = {
+                "business_name": analysis_result["business_name"],
+                "contact_info": analysis_result["contact_information"],
+                "location_data": analysis_result["location_data"]
+            }
+            
+            recommendations = await self.llm_client.validate_and_improve_content(
+                content_summary, "business_information"
+            )
+            analysis_result["llm_recommendations"] = recommendations
+            
+            return analysis_result
+            
+        except Exception as e:
+            analysis_result["llm_enhancement_error"] = str(e)
+            return analysis_result

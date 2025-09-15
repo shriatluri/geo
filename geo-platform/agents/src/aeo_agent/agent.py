@@ -34,9 +34,9 @@ class AEOAgent(BaseAgent):
     
     def __init__(self, llm_client: LLMClient):
         super().__init__("AEO Agent", llm_client)
-        self.analyzer = AEOAnalyzer()
-        self.generator = AEOGenerator()
-        self.validator = AEOValidator()
+        self.analyzer = AEOAnalyzer(llm_client)
+        self.generator = AEOGenerator(llm_client)
+        self.validator = AEOValidator(llm_client)
         
     def get_agent_type(self) -> str:
         return AgentType.AEO
@@ -113,21 +113,12 @@ class AEOAgent(BaseAgent):
         """Analyze existing schema markup and identify gaps."""
         results = []
         
-        # Find existing JSON-LD scripts
-        json_ld_scripts = soup.find_all('script', type='application/ld+json')
-        existing_schemas = []
+        # Use enhanced analyzer with LLM capabilities
+        schema_analysis = await self.analyzer.analyze_schema_markup(soup, website_data)
         
-        for script in json_ld_scripts:
-            try:
-                schema_data = json.loads(script.string or '{}')
-                schema_type = schema_data.get('@type', 'Unknown')
-                existing_schemas.append(schema_type)
-            except json.JSONDecodeError:
-                continue
-        
-        # Determine required schemas based on content and business type
-        required_schemas = self._determine_required_schemas(website_data)
-        missing_schemas = [schema for schema in required_schemas if schema not in existing_schemas]
+        # Extract existing and missing schemas from analysis
+        existing_schemas = [s["type"] for s in schema_analysis.get("existing_schemas", [])]
+        missing_schemas = schema_analysis.get("missing_schemas", [])
         
         if missing_schemas:
             results.append(AnalysisResult(
@@ -150,32 +141,31 @@ class AEOAgent(BaseAgent):
                 metadata={
                     "missing_schemas": missing_schemas,
                     "existing_schemas": existing_schemas,
-                    "total_required": len(required_schemas)
+                    "llm_analysis": schema_analysis.get("llm_recommendations", {})
                 }
             ))
         
         # Analyze quality of existing schemas
-        if existing_schemas:
-            quality_issues = await self._assess_schema_quality(json_ld_scripts)
-            if quality_issues:
-                results.append(AnalysisResult(
-                    id="schema_quality",
-                    type="schema_markup",
-                    title="Schema Markup Quality Issues",
-                    description="Existing schema markup has quality issues that may reduce effectiveness",
-                    priority=PriorityLevel.MEDIUM,
-                    impact=ImpactLevel.MEDIUM,
-                    effort=EffortLevel.LOW,
-                    recommendation="Fix schema markup quality issues",
-                    implementation_steps=[
-                        "Review and validate existing schema markup",
-                        "Fix identified issues",
-                        "Ensure all required properties are present",
-                        "Test with validation tools"
-                    ],
-                    confidence=0.8,
-                    metadata={"quality_issues": quality_issues}
-                ))
+        quality_issues = schema_analysis.get("quality_issues", [])
+        if quality_issues:
+            results.append(AnalysisResult(
+                id="schema_quality",
+                type="schema_markup",
+                title="Schema Markup Quality Issues",
+                description="Existing schema markup has quality issues that may reduce effectiveness",
+                priority=PriorityLevel.MEDIUM,
+                impact=ImpactLevel.MEDIUM,
+                effort=EffortLevel.LOW,
+                recommendation="Fix schema markup quality issues",
+                implementation_steps=[
+                    "Review and validate existing schema markup",
+                    "Fix identified issues",
+                    "Ensure all required properties are present",
+                    "Test with validation tools"
+                ],
+                confidence=0.8,
+                metadata={"quality_issues": quality_issues}
+            ))
         
         return results
     
@@ -245,11 +235,15 @@ class AEOAgent(BaseAgent):
         """Optimize content for AI-generated responses."""
         results = []
         
-        # Analyze content for AI optimization opportunities
-        content = website_data.extracted_text or self._extract_text_content(website_data.html_content)
+        # Use enhanced analyzer with LLM capabilities
+        soup = BeautifulSoup(website_data.html_content, 'html.parser')
+        ai_analysis = await self.analyzer.analyze_ai_response_optimization(website_data, soup)
         
-        # Check for clear, concise information that AI can easily parse
+        # Extract optimization opportunities
         optimization_opportunities = []
+        
+        # Add traditional analysis
+        content = website_data.extracted_text or self._extract_text_content(website_data.html_content)
         
         # Look for missing direct answers to common questions
         if "consulting" in content.lower():
@@ -267,7 +261,10 @@ class AEOAgent(BaseAgent):
                 "example": "Phone: [number], Email: [email], Address: [address]"
             })
         
-        if optimization_opportunities:
+        # Include LLM optimization suggestions
+        llm_suggestions = ai_analysis.get("llm_optimization_suggestions", {})
+        
+        if optimization_opportunities or llm_suggestions:
             results.append(AnalysisResult(
                 id="ai_response_optimization",
                 type="ai_optimization",
@@ -284,7 +281,11 @@ class AEOAgent(BaseAgent):
                     "Use bullet points for easy scanning"
                 ],
                 confidence=0.7,
-                metadata={"opportunities": optimization_opportunities}
+                metadata={
+                    "opportunities": optimization_opportunities,
+                    "llm_analysis": llm_suggestions,
+                    "content_clarity_score": ai_analysis.get("content_clarity_score", 0.0)
+                }
             ))
         
         return results

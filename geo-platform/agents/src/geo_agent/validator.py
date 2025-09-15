@@ -7,6 +7,7 @@ import re
 from typing import Dict, Any, List, Optional, Tuple
 from urllib.parse import urlparse
 from ..shared.models import WebsiteData
+from ..shared.llm_client import LLMClient
 
 
 class GEOValidator:
@@ -20,9 +21,10 @@ class GEOValidator:
     - Location data verification
     """
     
-    def __init__(self):
+    def __init__(self, llm_client: Optional[LLMClient] = None):
         self.validation_rules = self._load_validation_rules()
         self.data_standards = self._load_data_standards()
+        self.llm_client = llm_client or LLMClient()
     
     def validate_business_data(self, generated_business_data: Dict[str, Any]) -> Dict[str, Any]:
         """Validate generated business data for accuracy and completeness."""
