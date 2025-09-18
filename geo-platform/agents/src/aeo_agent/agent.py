@@ -41,74 +41,141 @@ class AEOAgent(BaseAgent):
     def get_agent_type(self) -> str:
         return AgentType.AEO
     
-    async def analyze(self, website_data: WebsiteData) -> AgentResponse:
+    async def analyze(self, website_data: WebsiteData, client_input: Dict[str, Any] = None) -> AgentResponse:
         """
-        Analyze website for visibility optimization opportunities.
-        
+        Analyze website for visibility optimization using modular 3-phase approach.
+
         Args:
             website_data: Website data to analyze
-            
+            client_input: Optional client input data for enhanced analysis
+
         Returns:
             AgentResponse with visibility optimization recommendations
         """
         start_time = time.time()
         self._log_analysis_start(str(website_data.url))
-        
+
         try:
-            results = []
-            
             # Parse HTML content
             soup = BeautifulSoup(website_data.html_content, 'html.parser')
-            
-            # 1. Schema markup analysis
-            schema_results = await self._analyze_schema_markup(soup, website_data)
-            results.extend(schema_results)
-            
-            # 2. Structured data generation
-            structured_data_results = await self._generate_structured_data(website_data)
-            results.extend(structured_data_results)
-            
-            # 3. AI response optimization
-            ai_optimization_results = await self._optimize_for_ai_responses(website_data)
-            results.extend(ai_optimization_results)
-            
-            # 4. Content structure analysis
-            content_structure_results = await self._analyze_content_structure(soup)
-            results.extend(content_structure_results)
-            
-            # 5. Meta information optimization
-            meta_results = await self._analyze_meta_information(soup, website_data)
-            results.extend(meta_results)
-            
+
+            # PHASE 1: ANALYZE - Comprehensive analysis using modular analyzer
+            schema_analysis = await self.analyzer.analyze_schema_markup(soup, website_data)
+            content_structure_analysis = self.analyzer.analyze_content_structure(soup)
+            meta_analysis = self.analyzer.analyze_meta_information(soup, website_data)
+            ai_optimization_analysis = await self.analyzer.analyze_ai_response_optimization(website_data, soup)
+
+            # PHASE 2: GENERATE - Create implementable solutions using modular generator
+            schema_packages = {}
+            missing_schemas = schema_analysis.get("missing_schemas", [])
+            for schema_type in missing_schemas:
+                schema_package = await self.generator.generate_schema_markup(
+                    schema_type, website_data, client_input.get("business_info") if client_input else None
+                )
+                schema_packages[schema_type] = schema_package
+
+            # Generate meta tags improvements
+            meta_package = self.generator.generate_meta_tags(website_data, meta_analysis)
+
+            # Generate AI optimization content
+            ai_optimization_content = await self.generator.generate_ai_optimization_content(website_data, ai_optimization_analysis)
+
+            # Generate content structure improvements
+            content_structure_improvements = self.generator.generate_content_structure_improvements(content_structure_analysis)
+
+            # PHASE 3: VALIDATE - Ensure quality and implementation readiness
+            schema_validations = {}
+            for schema_type, package in schema_packages.items():
+                validation = await self.validator.validate_schema_markup(package)
+                schema_validations[schema_type] = validation
+
+            # Validate meta tags
+            meta_validation = self.validator.validate_meta_tags(meta_package)
+
+            # Validate AI optimization recommendations
+            ai_optimization_validation = self.validator.validate_ai_optimization(ai_optimization_content)
+
+            # Validate content structure improvements
+            structure_validation = self.validator.validate_content_structure_improvements(content_structure_improvements)
+
+            # Check overall implementation readiness
+            all_generated_content = {
+                "schema_packages": schema_packages,
+                "schema_validations": schema_validations,
+                "meta_package": meta_package,
+                "meta_validation": meta_validation,
+                "ai_optimization_content": ai_optimization_content,
+                "ai_optimization_validation": ai_optimization_validation,
+                "content_structure_improvements": content_structure_improvements,
+                "structure_validation": structure_validation
+            }
+
+            implementation_readiness = await self.validator.validate_implementation_readiness(all_generated_content)
+
+            # Convert analysis results to AnalysisResult format for compatibility
+            results = self._convert_to_analysis_results(
+                schema_analysis, content_structure_analysis, meta_analysis, ai_optimization_analysis,
+                schema_packages, meta_package, ai_optimization_content, content_structure_improvements,
+                schema_validations, meta_validation, ai_optimization_validation, structure_validation,
+                implementation_readiness
+            )
+
             processing_time = time.time() - start_time
-            confidence = self._calculate_overall_confidence(results)
-            
+            confidence = implementation_readiness.get("readiness_score", 0.0)
+
             self._log_analysis_complete(str(website_data.url), len(results), confidence)
-            
+
             return self._create_response(
                 results=results,
                 confidence=confidence,
                 processing_time=processing_time,
                 metadata={
-                    "schema_templates_used": len(self.schema_templates),
-                    "cms_detected": website_data.metadata.get("cms", "unknown"),
-                    "analysis_categories": [
-                        "schema_markup", "structured_data", "ai_optimization",
-                        "content_structure", "meta_information"
-                    ]
+                    "analysis_phase": {
+                        "schema_analysis": schema_analysis,
+                        "content_structure_analysis": content_structure_analysis,
+                        "meta_analysis": meta_analysis,
+                        "ai_optimization_analysis": ai_optimization_analysis
+                    },
+                    "generation_phase": {
+                        "schema_packages": {k: v["schema_type"] for k, v in schema_packages.items()},
+                        "meta_package_keys": list(meta_package.keys()),
+                        "ai_optimization_keys": list(ai_optimization_content.keys()),
+                        "structure_improvement_keys": list(content_structure_improvements.keys())
+                    },
+                    "validation_phase": {
+                        "schema_validation_summary": {k: v["is_valid"] for k, v in schema_validations.items()},
+                        "meta_validation_status": meta_validation["is_valid"],
+                        "ai_optimization_scores": {
+                            "quality": ai_optimization_validation["quality_score"],
+                            "actionability": ai_optimization_validation["actionability_score"]
+                        },
+                        "structure_validation_scores": {
+                            "feasibility": structure_validation["implementation_feasibility"],
+                            "impact": structure_validation["impact_score"]
+                        }
+                    },
+                    "implementation_readiness": implementation_readiness,
+                    "modular_pattern_version": "3-phase"
                 }
             )
-            
+
         except Exception as e:
             self._log_error(e, f"analyzing {website_data.url}")
             processing_time = time.time() - start_time
-            
+
             return self._create_response(
                 results=[self._create_error_result(str(e))],
                 confidence=0.0,
                 processing_time=processing_time
             )
     
+    async def analyze_legacy(self, website_data: WebsiteData) -> AgentResponse:
+        """
+        Legacy analyze method for backward compatibility.
+        """
+        # Redirect to new modular analyze method
+        return await self.analyze(website_data)
+
     async def _analyze_schema_markup(self, soup: BeautifulSoup, website_data: WebsiteData) -> List[AnalysisResult]:
         """Analyze existing schema markup and identify gaps."""
         results = []
@@ -486,21 +553,180 @@ class AEOAgent(BaseAgent):
         
         return issues
     
+    def _convert_to_analysis_results(self, *analysis_data) -> List[AnalysisResult]:
+        """
+        Convert new 3-phase analysis format to AnalysisResult objects for compatibility.
+        """
+        results = []
+
+        (schema_analysis, content_structure_analysis, meta_analysis, ai_optimization_analysis,
+         schema_packages, meta_package, ai_optimization_content, content_structure_improvements,
+         schema_validations, meta_validation, ai_optimization_validation, structure_validation,
+         implementation_readiness) = analysis_data
+
+        # Schema Analysis Results
+        missing_schemas = schema_analysis.get("missing_schemas", [])
+        if missing_schemas:
+            results.append(AnalysisResult(
+                id="missing_schema_markup",
+                type="schema_markup",
+                title="Missing Schema Markup Opportunities",
+                description=f"Found {len(missing_schemas)} missing schema types that could improve visibility",
+                priority=PriorityLevel.HIGH,
+                impact=ImpactLevel.HIGH,
+                effort=EffortLevel.MEDIUM,
+                recommendation=f"Implement missing schema markup: {', '.join(missing_schemas)}",
+                implementation_steps=[
+                    "Generate JSON-LD structured data for missing schemas",
+                    "Add scripts to page head section",
+                    "Test with Google's Rich Results Test tool",
+                    "Monitor search appearance changes"
+                ],
+                confidence=0.9,
+                metadata={
+                    "missing_schemas": missing_schemas,
+                    "generated_packages": list(schema_packages.keys()),
+                    "validation_summary": {k: v["is_valid"] for k, v in schema_validations.items()}
+                }
+            ))
+
+        # Meta Tag Results
+        if not meta_validation.get("is_valid", True):
+            results.append(AnalysisResult(
+                id="meta_tag_optimization",
+                type="meta_optimization",
+                title="Meta Tag Optimization Needed",
+                description="Meta tags require optimization for better search visibility",
+                priority=PriorityLevel.HIGH,
+                impact=ImpactLevel.HIGH,
+                effort=EffortLevel.LOW,
+                recommendation="Implement optimized meta tags package",
+                implementation_steps=[
+                    "Update title tag with optimal length and keywords",
+                    "Improve meta description for better click-through rates",
+                    "Add Open Graph tags for social media sharing",
+                    "Include Twitter Card markup"
+                ],
+                confidence=0.9,
+                metadata={
+                    "meta_validation": meta_validation,
+                    "generated_package": list(meta_package.keys())
+                }
+            ))
+
+        # Content Structure Results
+        heading_issues = content_structure_analysis.get("heading_structure", {}).get("hierarchy_issues", [])
+        if heading_issues:
+            results.append(AnalysisResult(
+                id="content_structure_optimization",
+                type="content_structure",
+                title="Content Structure Improvements Needed",
+                description=f"Found {len(heading_issues)} content structure issues affecting SEO and accessibility",
+                priority=PriorityLevel.MEDIUM,
+                impact=ImpactLevel.MEDIUM,
+                effort=EffortLevel.LOW,
+                recommendation="Implement content structure improvements",
+                implementation_steps=content_structure_improvements.get("heading_structure_fixes", [])[:4],
+                confidence=structure_validation.get("implementation_feasibility", 0.8),
+                metadata={
+                    "heading_issues": heading_issues,
+                    "structure_validation": structure_validation,
+                    "improvements_generated": list(content_structure_improvements.keys())
+                }
+            ))
+
+        # AI Optimization Results
+        ai_quality_score = ai_optimization_validation.get("quality_score", 0.0)
+        if ai_quality_score < 0.7:
+            results.append(AnalysisResult(
+                id="ai_response_optimization",
+                type="ai_optimization",
+                title="AI Response Optimization Opportunities",
+                description=f"Content optimization score is {ai_quality_score:.2f}/1.0, below recommended threshold",
+                priority=PriorityLevel.MEDIUM,
+                impact=ImpactLevel.MEDIUM,
+                effort=EffortLevel.MEDIUM,
+                recommendation="Implement AI-friendly content improvements",
+                implementation_steps=[
+                    "Add structured Q&A content sections",
+                    "Improve content clarity and scannability",
+                    "Enhance semantic markup",
+                    "Implement accessibility improvements"
+                ],
+                confidence=ai_optimization_validation.get("actionability_score", 0.7),
+                metadata={
+                    "ai_optimization_analysis": ai_optimization_analysis,
+                    "ai_optimization_validation": ai_optimization_validation,
+                    "generated_content": list(ai_optimization_content.keys())
+                }
+            ))
+
+        # Implementation Readiness Results
+        if not implementation_readiness.get("ready_for_implementation", False):
+            blocking_issues = implementation_readiness.get("blocking_issues", [])
+            results.append(AnalysisResult(
+                id="implementation_readiness",
+                type="implementation_readiness",
+                title="Implementation Readiness Issues",
+                description=f"Found {len(blocking_issues)} blocking issues preventing implementation",
+                priority=PriorityLevel.HIGH,
+                impact=ImpactLevel.HIGH,
+                effort=EffortLevel.MEDIUM,
+                recommendation="Resolve blocking issues before proceeding with implementation",
+                implementation_steps=[
+                    "Address validation errors in generated content",
+                    "Resolve quality score issues",
+                    "Complete missing required components",
+                    "Verify all generated content meets standards"
+                ],
+                confidence=implementation_readiness.get("readiness_score", 0.0),
+                metadata={
+                    "blocking_issues": blocking_issues,
+                    "readiness_score": implementation_readiness.get("readiness_score", 0.0),
+                    "implementation_priority": implementation_readiness.get("implementation_priority", "medium"),
+                    "estimated_effort": implementation_readiness.get("estimated_effort", "medium")
+                }
+            ))
+
+        # If no major issues found, add a positive result
+        if not results:
+            results.append(AnalysisResult(
+                id="aeo_optimization_ready",
+                type="optimization_ready",
+                title="Ready for AEO Implementation",
+                description="All generated optimizations are validated and ready for implementation",
+                priority=PriorityLevel.LOW,
+                impact=ImpactLevel.HIGH,
+                effort=EffortLevel.LOW,
+                recommendation="Proceed with implementing generated optimizations",
+                implementation_steps=[
+                    "Deploy generated schema markup",
+                    "Apply meta tag optimizations",
+                    "Implement content structure improvements",
+                    "Apply AI optimization recommendations",
+                    "Monitor implementation results"
+                ],
+                confidence=implementation_readiness.get("readiness_score", 1.0),
+                metadata={"all_validations_passed": True, "total_optimizations": len(schema_packages) + 1}
+            ))
+
+        return results
+
     def _extract_business_name(self, website_data: WebsiteData) -> Optional[str]:
         """Extract business name from various sources."""
         # Try title first
         if website_data.title:
             return website_data.title.split(' | ')[0].split(' - ')[0]
-        
+
         # Try from metadata
         if "business_name" in website_data.metadata:
             return website_data.metadata["business_name"]
-        
+
         # Try from URL
         url_parts = str(website_data.url).split('.')
         if len(url_parts) > 1:
             return url_parts[0].replace('https://', '').replace('http://', '').title()
-        
+
         return None
     
     def _identify_faq_opportunities(self, website_data: WebsiteData) -> List[str]:
