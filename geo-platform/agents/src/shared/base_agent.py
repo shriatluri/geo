@@ -10,6 +10,7 @@ from datetime import datetime
 
 from .models import WebsiteData, AgentResponse, AnalysisResult
 from .llm_client import LLMClient
+from .monitoring import performance_monitor, quality_monitor
 
 
 class BaseAgent(ABC):
@@ -23,6 +24,8 @@ class BaseAgent(ABC):
         self.logger = logging.getLogger(f"geo.{name}")
         
     @abstractmethod
+    @performance_monitor("agent_analyze")
+    @quality_monitor
     async def analyze(self, website_data: WebsiteData) -> AgentResponse:
         """
         Analyze website data and return recommendations.
